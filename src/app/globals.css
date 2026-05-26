@@ -4,9 +4,9 @@
 
 /* ─── CSS custom properties ─── */
 :root {
-  --blue-primary: #4B8DFF;
-  --blue-hover:   #2F6FEB;
-  --blue-pressed: #1D4ED8;
+  --blue-primary: #6B9FED;
+  --blue-hover:   #4B80D9;
+  --blue-pressed: #3060B8;
 
   --radius-oneui-sm: 12px;
   --radius-oneui:    20px;
