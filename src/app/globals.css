@@ -127,6 +127,12 @@
 /* ─── Prevent text selection on interactive chrome ─── */
 button, [role='button'], [role='tab'] { user-select: none; }
 
+/* Page transition — runs on every route change via template.tsx */
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
 /* ─── Reduced motion — shared with WearWise Wardrobe ─── */
 @media (prefers-reduced-motion: reduce) {
   *,
