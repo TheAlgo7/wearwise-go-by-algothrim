@@ -22,6 +22,13 @@ const config: Config = {
           900: '#112250',
           950: '#080F2A',
         },
+        // Replaces harsh neon amber — soft copper/terracotta for critical/urgency states
+        amber: {
+          300: '#E8AE82',   // very soft apricot (hover, subtle text)
+          400: '#C8855A',   // soft copper — main critical color
+          500: '#A86840',   // deeper copper (borders, dividers)
+          600: '#8A5230',   // pressed / dark accent
+        },
         ink: {
           0:   '#000000',
           50:  '#080A0F',
