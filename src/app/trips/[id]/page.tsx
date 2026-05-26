@@ -186,7 +186,7 @@ export default function TripDetailPage() {
         )}
 
         {/* Trip metadata */}
-        <div className="bg-ink-100 rounded-oneui-lg px-4 py-3 flex items-center justify-between">
+        <div className="px-1 flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm text-fog-400">
             <MapPin size={14} className="text-blue-400" aria-hidden="true" />
             {trip.destinations.length} destination{trip.destinations.length !== 1 ? 's' : ''}
@@ -245,7 +245,7 @@ export default function TripDetailPage() {
 
         {/* Progress */}
         {totalCount > 0 && (
-          <div className="bg-ink-100 rounded-oneui-lg px-4 py-3">
+          <div className="px-1">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-fog-400">{packedCount} of {totalCount} packed</span>
               {packedCount === totalCount && (

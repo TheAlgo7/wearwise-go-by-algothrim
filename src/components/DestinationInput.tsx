@@ -43,7 +43,7 @@ export function DestinationInput({ destinations, onChange }: DestinationInputPro
               aria-label={`Destination ${i + 1} city`}
               className={cn(
                 'flex-1 bg-ink-300 text-fog-100 rounded-oneui-sm px-3 py-2 text-sm',
-                'placeholder:text-fog-700 outline-none',
+                'placeholder:text-fog-500 outline-none',
                 'focus:ring-2 focus:ring-blue-400',
               )}
             />
@@ -88,9 +88,9 @@ export function DestinationInput({ destinations, onChange }: DestinationInputPro
                   aria-pressed={dest.situation === sit}
                   onClick={() => update(i, { situation: dest.situation === sit ? undefined : sit })}
                   className={cn(
-                    'px-2.5 py-2 rounded-full text-xs font-medium transition-colors capitalize',
+                    'px-2.5 min-h-[44px] flex items-center rounded-full text-xs font-medium transition-colors capitalize',
                     dest.situation === sit
-                      ? 'bg-blue-400 text-white'
+                      ? 'bg-blue-400 text-ink-0'
                       : 'bg-ink-300 text-fog-500 hover:bg-ink-400 hover:text-fog-200',
                   )}
                 >

@@ -52,12 +52,13 @@ export function BottomNav() {
             >
               <Icon size={20} strokeWidth={active ? 2.1 : 1.7} aria-hidden className="flex-shrink-0" />
               <span
-                className="overflow-hidden whitespace-nowrap text-[13px] font-semibold leading-none"
+                className="whitespace-nowrap text-[13px] font-semibold leading-none origin-left"
                 style={{
-                  maxWidth: active ? '64px' : '0px',
                   marginLeft: active ? '7px' : '0px',
                   opacity: active ? 1 : 0,
-                  transition: 'max-width 220ms cubic-bezier(0.22,1,0.36,1) 45ms, margin-left 220ms cubic-bezier(0.22,1,0.36,1) 45ms, opacity 150ms ease 60ms',
+                  transform: active ? 'scaleX(1)' : 'scaleX(0)',
+                  display: 'inline-block',
+                  transition: 'transform 220ms cubic-bezier(0.22,1,0.36,1) 45ms, margin-left 220ms cubic-bezier(0.22,1,0.36,1) 45ms, opacity 150ms ease 60ms',
                 }}
               >
                 {label}

@@ -57,8 +57,7 @@ export function PackingSection({ category, items, onToggle }: PackingSectionProp
         />
       </button>
 
-      {open && (
-        <ul id={`items-${category}`} className="divide-y divide-white/[0.06]" role="list">
+      <ul id={`items-${category}`} className={cn('divide-y divide-white/[0.06]', !open && 'hidden')} role="list">
           {items.map((item) => (
             <li key={item.id}>
               <button
@@ -99,8 +98,7 @@ export function PackingSection({ category, items, onToggle }: PackingSectionProp
               </button>
             </li>
           ))}
-        </ul>
-      )}
+      </ul>
     </section>
   );
 }

@@ -33,8 +33,8 @@ export function InstallPrompt() {
 
   return (
     <div
-      role="status"
-      aria-live="polite"
+      role="complementary"
+      aria-label="Install app"
       className="fixed bottom-20 inset-x-4 z-50 flex items-center gap-3 bg-ink-200 border border-ink-400 rounded-oneui px-4 py-3 shadow-xl animate-slide-up"
     >
       <Download size={18} className="text-blue-400 shrink-0" aria-hidden="true" />

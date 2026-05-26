@@ -135,7 +135,7 @@ export default function NewTripPage() {
                 className={cn(
                   'flex items-center gap-2.5 px-4 py-3 rounded-oneui text-sm font-medium transition-colors',
                   transport === mode
-                    ? 'bg-blue-400 text-white'
+                    ? 'bg-blue-400 text-ink-0'
                     : 'bg-ink-200 text-fog-400 hover:bg-ink-300 hover:text-fog-100',
                 )}
               >
