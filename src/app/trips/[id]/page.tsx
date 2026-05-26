@@ -19,13 +19,14 @@ export default function TripDetailPage() {
   const router   = useRouter();
   const supabase = useMemo(() => createClient(), []);
 
-  const [trip,      setTrip]      = useState<Trip | null>(null);
-  const [items,     setItems]     = useState<PackingItem[]>([]);
-  const [weather,   setWeather]   = useState<DestinationWeather[]>([]);
-  const [reasoning, setReasoning] = useState('');
-  const [loading,   setLoading]   = useState(true);
-  const [packing,   setPacking]   = useState(false);
-  const [error,     setError]     = useState('');
+  const [trip,          setTrip]          = useState<Trip | null>(null);
+  const [items,         setItems]         = useState<PackingItem[]>([]);
+  const [weather,       setWeather]       = useState<DestinationWeather[]>([]);
+  const [reasoning,     setReasoning]     = useState('');
+  const [loading,       setLoading]       = useState(true);
+  const [packing,       setPacking]       = useState(false);
+  const [error,         setError]         = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const loadTrip = useCallback(async () => {
     setLoading(true);
@@ -49,6 +50,7 @@ export default function TripDetailPage() {
   }, [id, supabase, router]);
 
   useEffect(() => { loadTrip(); }, [loadTrip]);
+  useEffect(() => { if (trip) document.title = `${trip.name} · WearWise Go`; }, [trip]);
 
   const generateList = async () => {
     if (!trip || packing) return;
@@ -88,7 +90,7 @@ export default function TripDetailPage() {
   };
 
   const deleteTrip = async () => {
-    if (!confirm(`Delete "${trip?.name}"? This cannot be undone.`)) return;
+    if (!confirmDelete) { setConfirmDelete(true); return; }
     await supabase.from('trips').delete().eq('id', id);
     router.push('/');
   };
@@ -96,7 +98,7 @@ export default function TripDetailPage() {
   if (loading) {
     return (
       <div className="min-h-dvh flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-blue-400 border-t-transparent animate-spin" aria-label="Loading" />
+        <div role="status" aria-label="Loading trip" className="w-8 h-8 rounded-full border-2 border-blue-400 border-t-transparent animate-spin" />
       </div>
     );
   }
@@ -132,7 +134,7 @@ export default function TripDetailPage() {
           <Link
             href="/"
             aria-label="Back"
-            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-ink-200 transition-colors"
+            className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-ink-200 transition-colors"
           >
             <ArrowLeft size={20} className="text-fog-300" aria-hidden="true" />
           </Link>
@@ -141,7 +143,7 @@ export default function TripDetailPage() {
           <button
             onClick={deleteTrip}
             aria-label="Delete trip"
-            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-ink-200 transition-colors text-fog-600 hover:text-red-400"
+            className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-ink-200 transition-colors text-fog-600 hover:text-red-400"
           >
             <Trash2 size={18} aria-hidden="true" />
           </button>
@@ -149,6 +151,25 @@ export default function TripDetailPage() {
       />
 
       <div className="px-4 pt-4 pb-8 space-y-4">
+        {/* Delete confirmation */}
+        {confirmDelete && (
+          <div role="alert" className="flex items-center gap-3 bg-red-400/10 border border-red-400/30 rounded-oneui-lg px-4 py-3">
+            <p className="text-sm text-red-300 flex-1">Delete &ldquo;{trip.name}&rdquo;? This cannot be undone.</p>
+            <button
+              onClick={deleteTrip}
+              className="text-sm font-semibold text-red-400 hover:text-red-300 transition-colors min-h-[44px] px-2"
+            >
+              Delete
+            </button>
+            <button
+              onClick={() => setConfirmDelete(false)}
+              className="text-sm text-fog-400 hover:text-fog-200 transition-colors min-h-[44px] px-2"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+
         {/* Urgency banner */}
         {isUrgent && (
           <div
@@ -167,11 +188,11 @@ export default function TripDetailPage() {
           <div className="flex items-center gap-2 text-sm text-fog-400">
             <MapPin size={14} className="text-blue-400" aria-hidden="true" />
             {trip.destinations.length} destination{trip.destinations.length !== 1 ? 's' : ''}
-            <span className="text-fog-700">·</span>
+            <span className="text-fog-500">·</span>
             {trip.destinations.reduce((s, d) => s + d.nights, 0)} nights
             {trip.is_work && (
               <>
-                <span className="text-fog-700">·</span>
+                <span className="text-fog-500">·</span>
                 <span className="text-blue-400/80 text-xs font-medium">Work</span>
               </>
             )}
@@ -188,7 +209,7 @@ export default function TripDetailPage() {
               <div key={w.city} className="shrink-0 bg-ink-100 rounded-oneui px-3 py-2 text-center min-w-[96px]">
                 <p className="text-xs text-fog-600 truncate">{w.city}</p>
                 <p className="text-lg font-semibold text-blue-400">{w.tempC}°C</p>
-                <p className="text-[10px] text-fog-700 capitalize truncate">{w.description}</p>
+                <p className="text-[10px] text-fog-500 capitalize truncate">{w.description}</p>
               </div>
             ))}
           </div>

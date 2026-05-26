@@ -52,7 +52,7 @@ export function DestinationInput({ destinations, onChange }: DestinationInputPro
                 type="button"
                 onClick={() => remove(i)}
                 aria-label={`Remove destination ${i + 1}`}
-                className="w-9 h-9 flex items-center justify-center shrink-0 text-fog-600 hover:text-fog-200 transition-colors rounded-full hover:bg-ink-400"
+                className="w-11 h-11 flex items-center justify-center shrink-0 text-fog-600 hover:text-fog-200 transition-colors rounded-full hover:bg-ink-400"
               >
                 <X size={14} aria-hidden="true" />
               </button>

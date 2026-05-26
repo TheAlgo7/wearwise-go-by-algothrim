@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Plane, Car, Train, Bus } from 'lucide-react';
@@ -27,6 +27,8 @@ export default function NewTripPage() {
   const [isWork,       setIsWork]       = useState(false);
   const [loading,      setLoading]      = useState(false);
   const [error,        setError]        = useState('');
+
+  useEffect(() => { document.title = 'New trip · WearWise Go'; }, []);
 
   const valid =
     name.trim() &&
@@ -73,7 +75,7 @@ export default function NewTripPage() {
           <Link
             href="/"
             aria-label="Back"
-            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-ink-200 transition-colors"
+            className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-ink-200 transition-colors"
           >
             <ArrowLeft size={20} className="text-fog-300" aria-hidden="true" />
           </Link>

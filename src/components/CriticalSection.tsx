@@ -70,7 +70,7 @@ export function CriticalSection({ items, onToggle }: CriticalSectionProps) {
                   </span>
                 )}
                 {item.notes && (
-                  <span className="text-xs text-fog-700 block mt-0.5">{item.notes}</span>
+                  <span className="text-xs text-fog-500 block mt-0.5">{item.notes}</span>
                 )}
               </div>
             </button>
