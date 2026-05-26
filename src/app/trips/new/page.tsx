@@ -28,7 +28,7 @@ export default function NewTripPage() {
   const [loading,      setLoading]      = useState(false);
   const [error,        setError]        = useState('');
 
-  useEffect(() => { document.title = 'New trip · WearWise Go'; }, []);
+  useEffect(() => { const t = setTimeout(() => { document.title = 'New trip · WearWise Go'; }, 0); return () => clearTimeout(t); }, []);
 
   const valid =
     name.trim() &&
