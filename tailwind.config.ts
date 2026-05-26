@@ -10,16 +10,16 @@ const config: Config = {
     extend: {
       colors: {
         blue: {
-          50: '#eef5ff',
-          100: '#d9e9ff',
-          200: '#bfd7ff',
-          300: '#8db7ff',
-          400: '#4B8DFF',
-          500: '#2F6FEB',
-          600: '#1D4ED8',
-          700: '#173DA8',
-          800: '#142F7A',
-          900: '#111F4F',
+          50:  '#eef4ff',
+          100: '#ddeaff',
+          200: '#c2d6ff',
+          300: '#96b8f7',
+          400: '#6B9FED',   // primary — cornflower, softer than electric blue
+          500: '#4B80D9',   // hover
+          600: '#3060B8',   // pressed
+          700: '#214A96',
+          800: '#183572',
+          900: '#112250',
           950: '#080F2A',
         },
         ink: {
@@ -52,7 +52,7 @@ const config: Config = {
         border: 'oklch(19% 0.012 260)',
         muted: 'oklch(42% 0.015 260)',
         subtle: 'oklch(62% 0.015 260)',
-        primary: '#4B8DFF',
+        primary: '#6B9FED',
       },
       fontFamily: {
         sans: [
