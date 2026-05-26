@@ -1,6 +1,6 @@
 {
   "name": "WearWise Go",
-  "short_name": "WW Go",
+  "short_name": "WearWise Go",
   "description": "Pack like you already remembered everything.",
   "start_url": "/",
   "display": "standalone",
