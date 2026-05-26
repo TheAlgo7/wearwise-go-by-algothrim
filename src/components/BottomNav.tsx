@@ -6,8 +6,8 @@ import { Luggage, Package } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
 const NAV_ITEMS = [
-  { href: '/',      label: 'Trips',  Icon: Luggage },
-  { href: '/items', label: 'Items',  Icon: Package },
+  { href: '/',      label: 'Trips', Icon: Luggage, exact: true  },
+  { href: '/items', label: 'Items', Icon: Package, exact: false },
 ] as const;
 
 export function BottomNav() {
@@ -16,32 +16,56 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Main navigation"
-      className="fixed bottom-0 inset-x-0 z-40 pointer-events-none"
-      style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)' }}
+      className="fixed z-50"
+      style={{
+        bottom: 'calc(14px + env(safe-area-inset-bottom))',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: 'max-content',
+        maxWidth: 'calc(100vw - 12px)',
+      }}
     >
-      <div className="mx-auto max-w-xl px-5 pointer-events-auto">
-        <div className="bg-ink-200 border border-white/[0.07] rounded-full px-2 py-2 flex items-center justify-between shadow-card">
-          {NAV_ITEMS.map(({ href, label, Icon }) => {
-            const active = pathname === href || (href !== '/' && pathname.startsWith(href));
-            return (
-              <Link
-                key={href}
-                href={href}
-                aria-label={label}
-                aria-current={active ? 'page' : undefined}
-                className={cn(
-                  'relative flex-1 h-14 rounded-full flex flex-col items-center justify-center gap-1 text-[11px] font-semibold transition-colors active:scale-[0.97]',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400',
-                  active ? 'text-blue-50' : 'text-white/40 hover:text-white/70',
-                )}
+      <div
+        className="flex items-center gap-1 rounded-full px-2 py-2 bg-ink-200/90 border border-white/[0.07]"
+        style={{
+          backdropFilter: 'blur(28px) saturate(190%)',
+          WebkitBackdropFilter: 'blur(28px) saturate(190%)',
+          boxShadow: '0 -4px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05)',
+        }}
+      >
+        {NAV_ITEMS.map(({ href, label, Icon, exact }) => {
+          const active = exact ? pathname === href : pathname.startsWith(href);
+          return (
+            <Link
+              key={href}
+              href={href}
+              aria-label={label}
+              aria-current={active ? 'page' : undefined}
+              className={cn(
+                'relative flex items-center justify-center h-11 rounded-full px-3.5 min-w-[48px]',
+                'transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400',
+                active ? 'text-blue-50' : 'text-white/40 hover:text-white/70',
+              )}
+              style={active ? {
+                background: 'linear-gradient(180deg, rgba(107,159,237,0.35) 0%, rgba(107,159,237,0.22) 100%)',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.30), inset 0 -1px 0 rgba(0,0,0,0.12)',
+              } : undefined}
+            >
+              <Icon size={20} strokeWidth={active ? 2.1 : 1.7} aria-hidden className="flex-shrink-0" />
+              <span
+                className="overflow-hidden whitespace-nowrap text-[13px] font-semibold leading-none"
+                style={{
+                  maxWidth: active ? '64px' : '0px',
+                  marginLeft: active ? '7px' : '0px',
+                  opacity: active ? 1 : 0,
+                  transition: 'max-width 220ms cubic-bezier(0.22,1,0.36,1) 45ms, margin-left 220ms cubic-bezier(0.22,1,0.36,1) 45ms, opacity 150ms ease 60ms',
+                }}
               >
-                {active && <span aria-hidden className="absolute inset-0 rounded-full bg-blue-400/30 animate-scale-in" />}
-                <Icon size={20} className="relative" aria-hidden="true" strokeWidth={active ? 2.4 : 1.8} />
-                <span className="relative">{label}</span>
-              </Link>
-            );
-          })}
-        </div>
+                {label}
+              </span>
+            </Link>
+          );
+        })}
       </div>
     </nav>
   );
