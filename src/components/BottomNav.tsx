@@ -47,8 +47,7 @@ export function BottomNav() {
                 active ? 'text-blue-50' : 'text-white/40 hover:text-white/70',
               )}
               style={active ? {
-                background: 'linear-gradient(180deg, rgba(107,159,237,0.35) 0%, rgba(107,159,237,0.22) 100%)',
-                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.30), inset 0 -1px 0 rgba(0,0,0,0.12)',
+                background: 'rgba(107,159,237,0.22)',
               } : undefined}
             >
               <Icon size={20} strokeWidth={active ? 2.1 : 1.7} aria-hidden className="flex-shrink-0" />
