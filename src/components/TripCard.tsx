@@ -6,28 +6,25 @@ import { TRANSPORT_LABELS } from '@/lib/constants';
 
 const TRANSPORT_ICONS = {
   plane: Plane,
-  car: Car,
+  car:   Car,
   train: Train,
-  bus: Bus,
+  bus:   Bus,
 };
 
 interface TripCardProps {
-  trip: Trip;
+  trip:        Trip;
   packedCount: number;
-  totalCount: number;
+  totalCount:  number;
 }
 
 export function TripCard({ trip, packedCount, totalCount }: TripCardProps) {
   const TransportIcon = TRANSPORT_ICONS[trip.transport];
-  const progress = totalCount > 0 ? (packedCount / totalCount) * 100 : 0;
+  const progress  = totalCount > 0 ? (packedCount / totalCount) * 100 : 0;
   const allPacked = totalCount > 0 && packedCount === totalCount;
 
   const departureDate = new Date(trip.departure + 'T00:00:00');
-  const daysUntil = Math.ceil(
-    (departureDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-  );
-
-  const cityNames = trip.destinations.map((d) => d.city.split(',')[0]).join(' → ');
+  const daysUntil     = Math.ceil((departureDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+  const cityNames     = trip.destinations.map(d => d.city.split(',')[0]).join(' → ');
 
   return (
     <Link
@@ -61,11 +58,7 @@ export function TripCard({ trip, packedCount, totalCount }: TripCardProps) {
               {trip.carry_on_only ? ' · carry-on only' : ''}
             </span>
             <span className={cn('text-xs font-medium', daysUntil <= 3 ? 'text-amber-400' : 'text-fog-500')}>
-              {daysUntil === 0
-                ? 'Today'
-                : daysUntil < 0
-                  ? 'Departed'
-                  : `${daysUntil}d away`}
+              {daysUntil === 0 ? 'Today' : daysUntil < 0 ? 'Departed' : `${daysUntil}d away`}
             </span>
           </div>
         </div>
@@ -74,16 +67,19 @@ export function TripCard({ trip, packedCount, totalCount }: TripCardProps) {
       {totalCount > 0 && (
         <div className="mt-3">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] text-fog-600">
-              {packedCount} / {totalCount} packed
-            </span>
-            {allPacked && (
-              <span className="text-[10px] text-blue-300 font-medium">Ready</span>
-            )}
+            <span className="text-[10px] text-fog-600">{packedCount} / {totalCount} packed</span>
+            {allPacked && <span className="text-[10px] text-blue-300 font-medium">Ready</span>}
           </div>
-          <div className="h-1 bg-ink-300 rounded-full overflow-hidden" role="progressbar" aria-valuenow={Math.round(progress)} aria-valuemin={0} aria-valuemax={100}>
+          <div
+            className="h-1 bg-ink-300 rounded-full overflow-hidden"
+            role="progressbar"
+            aria-label="Packing progress"
+            aria-valuenow={Math.round(progress)}
+            aria-valuemin={0}
+            aria-valuemax={100}
+          >
             <div
-              className={cn('h-full rounded-full transition-all duration-500', allPacked ? 'bg-blue-400' : 'bg-blue-600')}
+              className={cn('h-full rounded-full transition-[width] duration-500', allPacked ? 'bg-blue-400' : 'bg-blue-600')}
               style={{ width: `${progress}%` }}
             />
           </div>

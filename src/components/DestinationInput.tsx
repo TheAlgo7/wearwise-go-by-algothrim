@@ -8,7 +8,7 @@ const SITUATIONS = ['beach', 'mountain', 'business', 'resort', 'cold', 'city'] a
 
 interface DestinationInputProps {
   destinations: Destination[];
-  onChange: (destinations: Destination[]) => void;
+  onChange:     (destinations: Destination[]) => void;
 }
 
 export function DestinationInput({ destinations, onChange }: DestinationInputProps) {
@@ -52,16 +52,22 @@ export function DestinationInput({ destinations, onChange }: DestinationInputPro
                 type="button"
                 onClick={() => remove(i)}
                 aria-label={`Remove destination ${i + 1}`}
-                className="p-1.5 text-fog-600 hover:text-fog-200 transition-colors rounded-full hover:bg-ink-400"
+                className="w-9 h-9 flex items-center justify-center shrink-0 text-fog-600 hover:text-fog-200 transition-colors rounded-full hover:bg-ink-400"
               >
-                <X size={14} />
+                <X size={14} aria-hidden="true" />
               </button>
             )}
           </div>
 
           <div className="flex items-center gap-2 pl-7">
-            <label className="text-xs text-fog-600 shrink-0">Nights</label>
+            <label
+              htmlFor={`nights-${i}`}
+              className="text-xs text-fog-600 shrink-0"
+            >
+              Nights
+            </label>
             <input
+              id={`nights-${i}`}
               type="number"
               value={dest.nights}
               min={1}
@@ -82,7 +88,7 @@ export function DestinationInput({ destinations, onChange }: DestinationInputPro
                   aria-pressed={dest.situation === sit}
                   onClick={() => update(i, { situation: dest.situation === sit ? undefined : sit })}
                   className={cn(
-                    'px-2.5 py-1 rounded-full text-xs font-medium transition-colors capitalize',
+                    'px-2.5 py-2 rounded-full text-xs font-medium transition-colors capitalize',
                     dest.situation === sit
                       ? 'bg-blue-400 text-white'
                       : 'bg-ink-300 text-fog-500 hover:bg-ink-400 hover:text-fog-200',

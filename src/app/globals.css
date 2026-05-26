@@ -2,65 +2,116 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── CSS custom properties ─── */
-:root {
-  --blue-primary: #6B9FED;
-  --blue-hover:   #4B80D9;
-  --blue-pressed: #3060B8;
+@layer base {
+  :root {
+    color-scheme: dark;
 
-  --radius-oneui-sm: 12px;
-  --radius-oneui:    20px;
-  --radius-oneui-lg: 28px;
-  --radius-oneui-xl: 36px;
+    /* Safe area insets */
+    --sat: env(safe-area-inset-top);
+    --sar: env(safe-area-inset-right);
+    --sab: env(safe-area-inset-bottom);
+    --sal: env(safe-area-inset-left);
+
+    /* Motion — shared with WearWise Wardrobe */
+    --duration-fast: 180ms;
+    --duration-base: 240ms;
+    --ease-spring:   cubic-bezier(0.22, 1, 0.36, 1);
+
+    /* Blue accent tokens */
+    --blue-primary: #6B9FED;
+    --blue-hover:   #4B80D9;
+    --blue-pressed: #3060B8;
+
+    /* OneUI border radii */
+    --radius-oneui-sm: 14px;
+    --radius-oneui:    20px;
+    --radius-oneui-lg: 26px;
+    --radius-oneui-xl: 32px;
+  }
+
+  html, body {
+    background:                theme('colors.ink.0');
+    color:                     theme('colors.fog.100');
+    font-family:               theme('fontFamily.sans');
+    -webkit-font-smoothing:    antialiased;
+    -moz-osx-font-smoothing:   grayscale;
+    text-rendering:            optimizeLegibility;
+    overscroll-behavior-y:     none;
+    touch-action:              manipulation;
+  }
+
+  body {
+    min-height:    100dvh;
+    padding-top:   var(--sat);
+    padding-left:  var(--sal);
+    padding-right: var(--sar);
+  }
+
+  /* Prevent iOS font size bump on inputs (stops auto-zoom on focus) */
+  input, select, textarea { font-size: 16px; }
+
+  * { -webkit-tap-highlight-color: transparent; }
 }
 
-/* ─── AMOLED base ─── */
-html,
-body {
-  background: theme('colors.ink.0');
-  color: theme('colors.fog.100');
-  font-family: theme('fontFamily.sans');
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  overscroll-behavior-y: none;
-}
-
-/* ─── Squircle clip-path helper ─── */
-.squircle {
-  clip-path: path(
-    'M 0,50 C 0,20 20,0 50,0 S 100,20 100,50 80,100 50,100 0,80 0,50'
-  );
-}
-
-/* ─── Safe-area padding utilities ─── */
-@layer utilities {
-  .pb-safe  { padding-bottom: env(safe-area-inset-bottom); }
-  .pt-safe  { padding-top:    env(safe-area-inset-top); }
-  .pl-safe  { padding-left:   env(safe-area-inset-left); }
-  .pr-safe  { padding-right:  env(safe-area-inset-right); }
-
-  .mb-safe  { margin-bottom: env(safe-area-inset-bottom); }
-
-  .pb-nav   { padding-bottom: calc(env(safe-area-inset-bottom) + 4rem); }
-}
-
-/* ─── Skeleton shimmer ─── */
 @layer components {
+  /* Standard card surface */
+  .go-card {
+    @apply bg-ink-200 border border-white/[0.06] rounded-[1.65rem] shadow-card;
+  }
+
+  /* Skeleton shimmer */
   .skeleton {
     @apply bg-ink-200 relative overflow-hidden rounded-oneui;
   }
   .skeleton::after {
     content: '';
     @apply absolute inset-0;
-    background: theme('backgroundImage.shimmer');
+    background:      theme('backgroundImage.shimmer');
     background-size: 200% 100%;
-    animation: theme('animation.shimmer');
+    animation:       theme('animation.shimmer');
   }
+
+  /* Press feedback — apply to interactive cards */
+  .press { @apply transition-transform duration-100 active:scale-[0.97]; }
+
+  /* Horizontal chip/weather scroll row */
+  .chip-row {
+    @apply flex gap-2 overflow-x-auto pb-1 -mx-4 px-4;
+    scrollbar-width:     none;
+    scroll-snap-type:    x mandatory;
+    scroll-padding-left: 1rem;
+  }
+  .chip-row > * { scroll-snap-align: start; }
+  .chip-row::-webkit-scrollbar { display: none; }
+
+  /* OneUI eyebrow / hero text helpers */
+  .oneui-hero     { @apply text-oneui-hero text-blue-100; }
+  .oneui-hero-sub { @apply text-oneui-cap text-blue-300 tracking-widest uppercase font-semibold; }
 }
 
-/* ─── Focus ring ─── */
+@layer utilities {
+  .pb-safe  { padding-bottom: env(safe-area-inset-bottom); }
+  .pt-safe  { padding-top:    env(safe-area-inset-top); }
+  .pl-safe  { padding-left:   env(safe-area-inset-left); }
+  .pr-safe  { padding-right:  env(safe-area-inset-right); }
+  .mb-safe  { margin-bottom:  env(safe-area-inset-bottom); }
+  .pb-nav   { padding-bottom: calc(env(safe-area-inset-bottom) + 4rem); }
+
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  .text-balance { text-wrap: balance; }
+  .text-pretty  { text-wrap: pretty; }
+}
+
+/* ─── Squircle clip-path helper ─── */
+.squircle {
+  clip-path: path('M 0,50 C 0,20 20,0 50,0 S 100,20 100,50 80,100 50,100 0,80 0,50');
+}
+
+/* ─── Focus ring (global) ─── */
 :focus-visible {
-  outline: 2px solid theme('colors.blue.400');
+  outline:        2px solid theme('colors.blue.400');
   outline-offset: 2px;
 }
 
@@ -69,23 +120,20 @@ body {
   scrollbar-width: thin;
   scrollbar-color: theme('colors.ink.400') transparent;
 }
-
-::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
-}
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb {
-  background: theme('colors.ink.400');
-  border-radius: 2px;
-}
-
-/* ─── OneUI tap highlight ─── */
-* {
-  -webkit-tap-highlight-color: transparent;
-}
+::-webkit-scrollbar        { width: 4px; height: 4px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: theme('colors.ink.400'); border-radius: 2px; }
 
 /* ─── Prevent text selection on interactive chrome ─── */
-button, [role='button'], [role='tab'] {
-  user-select: none;
+button, [role='button'], [role='tab'] { user-select: none; }
+
+/* ─── Reduced motion — shared with WearWise Wardrobe ─── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration:       0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration:      0.01ms !important;
+  }
 }

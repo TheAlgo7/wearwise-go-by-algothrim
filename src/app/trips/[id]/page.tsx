@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Sparkles, Trash2, MapPin, Zap } from 'lucide-react';
@@ -15,9 +15,9 @@ import type { Trip, PackingItem, PackingCategory, DestinationWeather } from '@/t
 type NormalCategory = Exclude<(typeof CATEGORY_ORDER)[number], 'critical'>;
 
 export default function TripDetailPage() {
-  const { id } = useParams<{ id: string }>();
+  const { id }   = useParams<{ id: string }>();
   const router   = useRouter();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   const [trip,      setTrip]      = useState<Trip | null>(null);
   const [items,     setItems]     = useState<PackingItem[]>([]);
@@ -232,12 +232,13 @@ export default function TripDetailPage() {
             <div
               className="h-1.5 bg-ink-300 rounded-full overflow-hidden"
               role="progressbar"
+              aria-label="Packing progress"
               aria-valuenow={Math.round((packedCount / totalCount) * 100)}
               aria-valuemin={0}
               aria-valuemax={100}
             >
               <div
-                className="h-full bg-blue-400 rounded-full transition-all duration-500"
+                className="h-full bg-blue-400 rounded-full transition-[width] duration-500"
                 style={{ width: `${(packedCount / totalCount) * 100}%` }}
               />
             </div>
