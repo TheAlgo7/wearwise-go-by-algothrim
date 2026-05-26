@@ -1,104 +1,128 @@
+<div align="center">
+
 # WearWise Go
 
-Intelligent packing lists for multi-destination trips. Built as a companion to the WearWise Wardrobe app.
+### *Pack like you already remembered everything.*
 
-## What it does
+[![Next.js](https://img.shields.io/badge/Next.js-16-6B9FED?style=flat-square&logo=nextdotjs&logoColor=white&labelColor=111111)](https://nextjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6B9FED?style=flat-square&logo=typescript&logoColor=white&labelColor=111111)](https://www.typescriptlang.org)
+[![Supabase](https://img.shields.io/badge/Supabase-6B9FED?style=flat-square&logo=supabase&logoColor=white&labelColor=111111)](https://supabase.com)
+[![PWA](https://img.shields.io/badge/PWA-Installable-6B9FED?style=flat-square&labelColor=111111)](https://github.com/TheAlgo7/wearwise-go-by-algothrim)
+[![AI](https://img.shields.io/badge/AI-Gemini%20·%20Groq%20·%20OpenRouter-6B9FED?style=flat-square&labelColor=111111)](https://github.com/TheAlgo7/wearwise-go-by-algothrim)
 
-- Generate smart packing lists based on destination weather, trip duration, and travel situation
-- Multi-stop itineraries with per-destination layer reasoning (e.g. heavy jacket flagged specifically for the cold leg)
-- Critical "Don't forget" section for passport, medicines, chargers, and trip-specific essentials
-- Urgency mode: when departure is 0–1 days away, a banner surfaces the most critical items first
-- AI packing intelligence via a Groq → OpenRouter → Gemini fallback chain
-- Transport-aware suggestions (carry-on liquids, road trip extras, train comfort items)
-- Conditional laptop: added automatically for work trips or stays of 7+ nights
-- PWA — installable on Android/iOS, works offline after first visit
+</div>
 
-## Tech stack
+## Why This Exists
 
-| Layer     | Choice                                                |
-| --------- | ----------------------------------------------------- |
-| Framework | Next.js 16 App Router, React 19                       |
-| Language  | TypeScript                                            |
-| Styling   | Tailwind CSS v3                                       |
-| Database  | Supabase (Postgres)                                   |
-| Auth      | Supabase anon key (single-user, no login)             |
-| AI        | Groq (llama-3.3-70b) > OpenRouter > Gemini 2.0 Flash  |
-| Weather   | OpenWeatherMap current conditions                     |
-| PWA       | Custom service worker + Web App Manifest              |
+Every time you pack for a trip you start from zero. You check the same mental list, forget the same things, over-pack the same way, and arrive somewhere realising the one item you needed most is sitting on your bathroom shelf.
 
-## Design
+WearWise Go is built to end that. It knows the trip — where you're going, how you're getting there, how many nights, whether it's work or leisure, whether you're carry-on only. It generates a packing list from that context, tuned by AI to the specific conditions of that trip. Weather is fetched automatically. Liquids limits are enforced if you're flying carry-on. Formal wear is added if you marked it a work trip.
 
-Samsung One UI-inspired AMOLED dark UI with a blue travel accent (`#4B8DFF`), rounded system surfaces, floating pill navigation, and blue-tinted ink neutrals. It is designed as a sibling to the crimson WearWise wardrobe app rather than a separate visual language.
+**This is a companion app to [WearWise Wardrobe](https://github.com/TheAlgo7/wearwise-by-algothrim).** Same design language, same stack, same owner. One tells you what to wear. This one tells you what to bring.
 
-## Getting started
+## How The Engine Works
+
+**Stage 1 — The Trip**
+User creates a trip with destinations, nights, vibe tags, and transport mode. Carry-on only and work trip flags adjust the generation rules before anything runs.
+
+**Stage 2 — The Context**
+Live weather is fetched for each destination at generation time and injected into the prompt — so suggestions are accurate to actual conditions, not generalised seasonal advice.
+
+**Stage 3 — The List**
+A deterministic packing engine builds the base list from trip context. AI (Groq → OpenRouter → Gemini fallback) then reviews it, tunes it, and surfaces the most critical items first.
+
+The LLM is the last mile, not the whole pipeline. Filtering and context assembly happen in code so the model gets a tight, relevant brief instead of a raw dump of rules.
+
+## Features
+
+- **Context-aware packing lists** generated from trip details, not generic templates.
+- **Multi-destination support** — multiple stops with individual night counts and vibes.
+- **Weather-aware generation** — live conditions fetched at list creation time.
+- **Carry-on mode** — enforces 100ml liquids rule and tight space constraints.
+- **Work trip mode** — adds laptop, cables, and business documents automatically.
+- **Pack progress tracking** — check items off as you go, persisted per trip.
+- **Critical item surfacing** — passport-level items always appear first.
+- **Urgency banner** — when departure is 0–1 days away, the most critical items surface at the top.
+- **Offline-ready PWA** — installs to home screen, works without a connection after first load.
+
+## Install to Home Screen
+
+**Android (Chrome):**
+1. Open the app in Chrome
+2. Tap the **⋮** menu → **Add to Home screen**
+3. Tap **Add** — WearWise Go installs like a native app
+
+**iOS (Safari):**
+1. Open the app in Safari
+2. Tap the **Share** button → **Add to Home Screen**
+3. Tap **Add** — the app appears on your home screen
+
+## Stack
+
+| Layer | Technology |
+| --- | --- |
+| Framework | Next.js 16 App Router + React 19 |
+| Language | TypeScript |
+| Styling | Tailwind CSS — Samsung One UI-inspired direction |
+| Data | Supabase Postgres |
+| AI | Gemini, Groq, OpenRouter |
+| Weather | OpenWeather API |
+| Hosting | Vercel |
+| PWA | Custom service worker, Web App Manifest |
+
+## Design Language
+
+- **AMOLED-first.** Pure blacks, cornflower blue accents, soft copper for urgency states.
+- **Samsung-inspired UI.** Rounded, touch-forward, comfortable at arm's length on a phone screen.
+- **Shared system with WearWise Wardrobe.** Same tokens, same components, same typographic scale — one cohesive product family.
+- **Built for the moment of packing.** Every screen is optimised for one task: getting out the door without forgetting anything.
+
+## Security Note
+
+Supabase RLS is intentionally open for V1 — this is a single-user personal tool with no public auth. If you fork this for your own use, tighten row-level security before exposing it to other users or storing sensitive data.
+
+<details>
+<summary>Quick Start</summary>
 
 ```bash
+git clone https://github.com/TheAlgo7/wearwise-go-by-algothrim
+cd wearwise-go-by-algothrim
 npm install
-cp .env.local.example .env.local   # fill in keys below
 npm run dev
 ```
 
-### Required env vars
+Create `.env.local`:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 OPENWEATHER_API_KEY=
+GEMINI_API_KEY=
 GROQ_API_KEY=
 OPENROUTER_API_KEY=
-GEMINI_API_KEY=
 NEXT_PUBLIC_DEFAULT_CITY=New Delhi,IN
 ```
 
-### Database setup
-
-Run `supabase/schema.sql` in the Supabase SQL editor, then `supabase/seed.sql` for default items and packing rules. If upgrading from a previous version, also run `supabase/migration-001-sprint2.sql`.
-
-## How packing generation works
-
-1. User creates a trip with destinations, nights, situation tags (beach / mountain / business / resort / cold / city), and transport mode
-2. App fetches current weather for each destination city via OpenWeather
-3. Deterministic packing engine (`src/lib/packing-engine.ts`) builds the list from trip context and weather
-4. AI (Groq/OpenRouter/Gemini) reviews the list and adds a short intelligence note
-5. List is persisted to Supabase so it survives page refreshes and can be checked off
-
-## Project structure
-
-```text
-src/
-  app/
-    api/pack/        AI + engine orchestration
-    api/weather/     Multi-city weather fetch
-    trips/new/       New trip form
-    trips/[id]/      Trip detail + packing list
-  components/
-    CriticalSection  Amber "Don't forget" section
-    PackingSection   Collapsible category section
-    TripCard         Home screen trip card
-    DestinationInput Multi-stop city/nights/situation input
-    oneui/           Design system components
-  lib/
-    packing-engine   Deterministic list builder
-    prompts          AI prompt builder
-    llm              Groq → OpenRouter → Gemini chain
-    weather          OpenWeather fetch
-    supabase/        Client, server, and type helpers
-  types/             Shared TypeScript types
-supabase/
-  schema.sql         Full DB schema
-  seed.sql           Default items and rules
-  migration-001-sprint2.sql   Priority + is_work columns
-```
-
-## Scripts
+Initialize the database:
 
 ```bash
-npm run dev          # local dev server
-npm run build        # production build
-npm run type-check   # TypeScript check without emit
+# Run in Supabase SQL editor
+supabase/schema.sql
+supabase/seed.sql
 ```
 
-## Deployment
+```bash
+npm run build
+npm run start
+npm run lint
+npm run type-check
+```
 
-Deployed on Vercel. Push to `main` triggers auto-deploy. Environment variables are set in the Vercel dashboard (not committed).
+</details>
+
+<div align="center">
+
+Built for **real trips, real context, and nothing left behind** by **[The Algothrim](https://thealgothrim.com)**
+
+</div>
