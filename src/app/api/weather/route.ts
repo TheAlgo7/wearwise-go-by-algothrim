@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'cities param required' }, { status: 400 });
   }
 
-  const cityList = cities.split(',').map(c => c.trim()).filter(Boolean);
+  const cityList = cities.split('|').map(c => c.trim()).filter(Boolean);
   if (cityList.length === 0) {
     return NextResponse.json({ error: 'no valid cities' }, { status: 400 });
   }

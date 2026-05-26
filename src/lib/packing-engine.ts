@@ -157,10 +157,6 @@ export function buildPackingList(input: EngineInput): Omit<GeneratedPackingList,
   const midLayers   = wardrobeClothing.filter(i => i.layer === 'mid');
   const outerLayers = wardrobeClothing.filter(i => i.layer === 'outer');
 
-  // Track what we've added to avoid duplication across destinations
-  const addedMid   = false;
-  const addedOuter = false;
-
   let midAdded   = false;
   let outerAdded = false;
 

@@ -10,7 +10,7 @@ import { PackingSection } from '@/components/PackingSection';
 import { CriticalSection } from '@/components/CriticalSection';
 import { CATEGORY_ORDER, URGENCY_DAYS } from '@/lib/constants';
 import { cn } from '@/lib/cn';
-import type { Trip, PackingItem, PackingCategory, DestinationWeather } from '@/types';
+import type { Trip, PackingItem, DestinationWeather } from '@/types';
 
 type NormalCategory = Exclude<(typeof CATEGORY_ORDER)[number], 'critical'>;
 
@@ -37,7 +37,9 @@ export default function TripDetailPage() {
       .single();
 
     if (!tripData) { router.replace('/'); return; }
-    setTrip(tripData as unknown as Trip);
+    const t = tripData as unknown as Trip;
+    setTrip(t);
+    document.title = `${t.name} · WearWise Go`;
 
     const { data: listData } = await supabase
       .from('packing_lists')
@@ -49,8 +51,8 @@ export default function TripDetailPage() {
     setLoading(false);
   }, [id, supabase, router]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { loadTrip(); }, [loadTrip]);
-  useEffect(() => { if (trip) document.title = `${trip.name} · WearWise Go`; }, [trip]);
 
   const generateList = async () => {
     if (!trip || packing) return;
@@ -58,7 +60,7 @@ export default function TripDetailPage() {
     setError('');
 
     try {
-      const cities = trip.destinations.map(d => d.city).join(',');
+      const cities = trip.destinations.map(d => d.city).join('|');
       const wRes   = await fetch(`/api/weather?cities=${encodeURIComponent(cities)}`);
       const wData  = await wRes.json();
       const weatherData: DestinationWeather[] = wData.weather ?? [];

@@ -64,6 +64,7 @@ export async function POST(req: NextRequest) {
     ...packingList.electronics,
     ...packingList.documents,
     ...packingList.misc,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ].map(({ id: _id, ...rest }) => rest); // let Supabase generate IDs
 
   const { error: insertError } = await supabase
@@ -71,7 +72,7 @@ export async function POST(req: NextRequest) {
     .insert(allItems);
 
   if (insertError) {
-    console.error('Failed to persist packing list:', insertError.message);
+    return NextResponse.json({ error: `Failed to save packing list: ${insertError.message}` }, { status: 502 });
   }
 
   return NextResponse.json({ packingList });
