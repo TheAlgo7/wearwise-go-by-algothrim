@@ -141,19 +141,19 @@ Loading state: spinner + disabled. Uses `aria-busy`.
 
 ### OneUIChip
 
-Situation chips in DestinationInput: `px-2.5 py-1 rounded-full text-xs`. Active: `bg-blue-400 text-white`. Inactive: `bg-ink-300 text-fog-500`.
+Situation chips in DestinationInput: `px-2.5 min-h-[44px] rounded-full text-xs`. Active: `bg-blue-400 text-ink-0`. Inactive: `bg-ink-300 text-fog-500`.
 
 ### PackingSection
 
-Collapsible section with accordion. Header: icon circle + category label + packed count + chevron. Body: list of check-off items. Check circle: 20px, teal on packed.
+Collapsible section with accordion. Header: icon circle + category label + packed count + chevron. Body: list of check-off items (preserved in DOM when collapsed via `hidden` class). Check circle: 20px, blue on packed.
 
 ### CriticalSection
 
-Always open. Amber-tinted header with `AlertTriangle` icon. Shown at top of packing list before all category sections. Items have amber check circles.
+Always open. Copper-tinted header with `AlertTriangle` icon. Shown at top of packing list before all category sections. Items have copper check circles.
 
 ### OneUIHeader
 
-Sticky. `bg-ink-0/[0.88] backdrop-blur-md border-b border-white/[0.06]`. Contains title + optional subtitle + left/right slots (back arrow, delete button).
+Non-sticky. `flex items-center gap-3 px-4 py-4`. Contains title + optional subtitle + left/right slots (back arrow, delete button). Pages scroll naturally beneath it.
 
 ### BottomNav
 
@@ -216,14 +216,14 @@ Header uses `pt-safe` for status bar clearance.
 
 ## Packing List Visual Hierarchy
 
-1. **CriticalSection** (amber) — always first, always open
+1. **CriticalSection** (copper) — always first, always open
 2. **Clothing** — collapsible
 3. **Grooming** — collapsible
 4. **Electronics** — collapsible
 5. **Documents** — collapsible
 6. **Misc** — collapsible
 
-Items with `destination_label` show a small tinted uppercase tag below the name (teal for normal items, amber for critical items).
+Items with `destination_label` show a small tinted uppercase tag below the name (`text-blue-300/75` for normal items, `text-amber-400/75` copper for critical items).
 
 ---
 
