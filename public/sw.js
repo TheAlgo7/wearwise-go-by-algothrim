@@ -1,4 +1,4 @@
-const CACHE_NAME = 'wearwise-go-v1';
+const CACHE_NAME = 'wearwise-go-v2';
 
 const PRECACHE = [
   '/',

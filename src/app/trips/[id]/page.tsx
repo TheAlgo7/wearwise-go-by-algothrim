@@ -74,8 +74,8 @@ export default function TripDetailPage() {
         body:    JSON.stringify({ trip, weather: weatherData }),
       });
 
-      if (!pRes.ok) throw new Error('Pack API failed');
       const pData = await pRes.json();
+      if (!pRes.ok) throw new Error(pData.error ?? 'Pack API failed');
 
       setReasoning(pData.packingList.reasoning ?? '');
       await loadTrip();

@@ -47,17 +47,17 @@ The ink scale is cold-tinted (blue-shifted) to harmonise with the blue accent. T
 | `blue-500` | `#4B80D9` | Hover state for blue-400 |
 | `blue-600` | `#3060B8` | Pressed state |
 
-### Urgency / Critical (amber)
+### Urgency / Critical (copper)
 
-Amber is used exclusively for the "Don't forget" critical section and the urgency banner (departure within 1 day). Never use amber for decorative or non-urgent purposes.
+Soft copper (`#C8855A`) is used exclusively for the "Don't forget" critical section and the urgency banner (departure within 1 day). The Tailwind `amber` scale is overridden in `tailwind.config.ts` to output these copper values — class names remain `amber-*` but render copper. Never use for decorative or non-urgent purposes.
 
-| Usage | Class |
-|---|---|
-| Critical section background | `bg-amber-500/[0.08]` |
-| Critical section border | `border-amber-500/25` |
-| Critical icon + heading | `text-amber-400` |
-| Urgency banner | `bg-amber-500/10 border-amber-500/30 text-amber-400` |
-| Days countdown (≤3 days) | `text-amber-400` |
+| Usage | Class | Actual colour |
+| --- | --- | --- |
+| Critical section background | `bg-amber-500/[0.08]` | `#A86840` at 8% |
+| Critical section border | `border-amber-500/25` | `#A86840` at 25% |
+| Critical icon + heading | `text-amber-400` | `#C8855A` |
+| Urgency banner | `bg-amber-500/10 border-amber-500/30 text-amber-400` | copper tints |
+| Days countdown (≤3 days) | `text-amber-400` | `#C8855A` |
 
 ### Semantic
 

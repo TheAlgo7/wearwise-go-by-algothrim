@@ -36,26 +36,30 @@ create table if not exists trips (
   transport     text not null check (transport in ('plane','car','train','bus')),
   destinations  jsonb not null default '[]',
   carry_on_only boolean not null default false,
+  is_work       boolean not null default false,
   created_at    timestamptz not null default now(),
   updated_at    timestamptz not null default now()
 );
 
 -- ─── Packing list items ──────────────────────────────────────────────────────
 create table if not exists packing_lists (
-  id          uuid primary key default uuid_generate_v4(),
-  trip_id     uuid not null references trips(id) on delete cascade,
-  category    text not null check (category in ('clothing','grooming','electronics','documents','misc')),
-  name        text not null,
-  quantity    smallint not null default 1,
-  packed      boolean not null default false,
-  is_clothing boolean not null default false,
-  notes       text,
-  created_at  timestamptz not null default now()
+  id                uuid primary key default uuid_generate_v4(),
+  trip_id           uuid not null references trips(id) on delete cascade,
+  category          text not null check (category in ('clothing','grooming','electronics','documents','misc')),
+  name              text not null,
+  quantity          smallint not null default 1,
+  packed            boolean not null default false,
+  is_clothing       boolean not null default false,
+  priority          text not null default 'normal' check (priority in ('critical','normal')),
+  destination_label text,
+  notes             text,
+  created_at        timestamptz not null default now()
 );
 
 -- ─── Indexes ─────────────────────────────────────────────────────────────────
-create index if not exists idx_packing_lists_trip_id on packing_lists(trip_id);
-create index if not exists idx_trips_departure       on trips(departure desc);
+create index if not exists idx_packing_lists_trip_id   on packing_lists(trip_id);
+create index if not exists idx_packing_lists_priority  on packing_lists(priority);
+create index if not exists idx_trips_departure         on trips(departure desc);
 create index if not exists idx_packing_rules_situation on packing_rules(situation);
 
 -- ─── updated_at trigger ──────────────────────────────────────────────────────
