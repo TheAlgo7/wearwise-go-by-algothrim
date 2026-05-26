@@ -95,7 +95,7 @@ export default function NewTripPage() {
             required
             className={cn(
               'w-full bg-ink-200 text-fog-100 rounded-oneui px-4 py-3 text-sm',
-              'placeholder:text-fog-700 outline-none focus:ring-2 focus:ring-teal-400',
+              'placeholder:text-fog-700 outline-none focus:ring-2 focus:ring-blue-400',
             )}
           />
         </div>
@@ -114,7 +114,7 @@ export default function NewTripPage() {
             min={new Date().toISOString().split('T')[0]}
             className={cn(
               'w-full bg-ink-200 text-fog-100 rounded-oneui px-4 py-3 text-sm',
-              'outline-none focus:ring-2 focus:ring-teal-400',
+              'outline-none focus:ring-2 focus:ring-blue-400',
               'appearance-none [color-scheme:dark]',
             )}
           />
@@ -133,7 +133,7 @@ export default function NewTripPage() {
                 className={cn(
                   'flex items-center gap-2.5 px-4 py-3 rounded-oneui text-sm font-medium transition-colors',
                   transport === mode
-                    ? 'bg-teal-400 text-ink-0'
+                    ? 'bg-blue-400 text-white'
                     : 'bg-ink-200 text-fog-400 hover:bg-ink-300 hover:text-fog-100',
                 )}
               >

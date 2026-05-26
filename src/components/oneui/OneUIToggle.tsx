@@ -20,8 +20,8 @@ export function OneUIToggle({ checked, onChange, label, disabled }: OneUIToggleP
         onClick={() => onChange(!checked)}
         className={cn(
           'relative w-12 h-7 rounded-full transition-colors duration-200',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-0',
-          checked ? 'bg-teal-400' : 'bg-ink-400',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-0',
+          checked ? 'bg-blue-400' : 'bg-ink-400',
         )}
       >
         <span

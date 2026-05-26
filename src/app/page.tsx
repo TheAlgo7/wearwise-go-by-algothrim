@@ -1,16 +1,15 @@
 import Link from 'next/link';
-import { Plus } from 'lucide-react';
+import { Luggage, Plus, Route } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
-import { OneUIHeader } from '@/components/oneui';
 import { TripCard } from '@/components/TripCard';
 import type { Trip } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
 interface TripWithProgress {
-  trip:        Trip;
+  trip: Trip;
   packedCount: number;
-  totalCount:  number;
+  totalCount: number;
 }
 
 async function getTripsWithProgress(): Promise<TripWithProgress[]> {
@@ -36,10 +35,10 @@ async function getTripsWithProgress(): Promise<TripWithProgress[]> {
     {},
   );
 
-  return (trips as Trip[]).map(trip => {
-    const items      = listsByTrip[trip.id] ?? [];
-    const totalCount  = items.length;
-    const packedCount = items.filter(i => i.packed).length;
+  return (trips as Trip[]).map((trip) => {
+    const items = listsByTrip[trip.id] ?? [];
+    const totalCount = items.length;
+    const packedCount = items.filter((i) => i.packed).length;
     return { trip, packedCount, totalCount };
   });
 }
@@ -47,35 +46,54 @@ async function getTripsWithProgress(): Promise<TripWithProgress[]> {
 export default async function HomePage() {
   const trips = await getTripsWithProgress();
 
-  const upcoming = trips.filter(t => new Date(t.trip.departure + 'T00:00:00') >= new Date());
-  const past     = trips.filter(t => new Date(t.trip.departure + 'T00:00:00') <  new Date());
+  const upcoming = trips.filter((t) => new Date(t.trip.departure + 'T00:00:00') >= new Date());
+  const past = trips.filter((t) => new Date(t.trip.departure + 'T00:00:00') < new Date());
+  const today = new Date().toLocaleDateString('en-IN', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'short',
+  });
 
   return (
-    <>
-      <OneUIHeader
-        title="WearWise Go"
-        subtitle="Pack like you already remembered everything."
-        right={
+    <main className="min-h-dvh">
+      <div className="px-5 pt-14 pb-4">
+        <div className="flex items-end justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-[12px] leading-[17px] text-blue-300 font-semibold tracking-widest uppercase mb-2 truncate">
+              {today} · Travel kit
+            </p>
+            <h1 className="text-[30px] font-semibold leading-[1.2] text-blue-50">
+              Ready to move.
+            </h1>
+            <p className="mt-1 text-[13px] leading-5 text-fog-400">
+              Pack the things future you would forget.
+            </p>
+          </div>
           <Link
             href="/trips/new"
             aria-label="New trip"
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-teal-400 text-ink-0 hover:bg-teal-500 active:bg-teal-600 transition-colors"
+            className="shrink-0 w-12 h-12 rounded-full bg-blue-400 text-white flex items-center justify-center shadow-card active:scale-[0.97] transition-colors hover:bg-blue-500"
           >
-            <Plus size={20} aria-hidden="true" />
+            <Plus size={22} aria-hidden="true" />
           </Link>
-        }
-      />
+        </div>
+      </div>
 
-      <div className="px-4 pt-4 pb-2 space-y-6">
+      <div className="flex flex-col gap-3 px-4 pb-2">
         {upcoming.length === 0 && past.length === 0 ? (
           <EmptyState />
         ) : (
           <>
             {upcoming.length > 0 && (
-              <section aria-labelledby="upcoming-heading">
-                <h2 id="upcoming-heading" className="text-xs font-semibold text-fog-600 uppercase tracking-wider mb-3 px-1">
-                  Upcoming
-                </h2>
+              <section aria-labelledby="upcoming-heading" className="pt-1">
+                <div className="mb-2 flex items-center justify-between px-1">
+                  <h2 id="upcoming-heading" className="text-[12px] leading-[17px] text-blue-300 font-semibold tracking-widest uppercase">
+                    Upcoming
+                  </h2>
+                  <p className="text-[11px] font-semibold text-blue-100/45">
+                    {upcoming.length} trip{upcoming.length !== 1 ? 's' : ''}
+                  </p>
+                </div>
                 <ul className="space-y-3" role="list">
                   {upcoming.map(({ trip, packedCount, totalCount }) => (
                     <li key={trip.id}>
@@ -87,8 +105,8 @@ export default async function HomePage() {
             )}
 
             {past.length > 0 && (
-              <section aria-labelledby="past-heading">
-                <h2 id="past-heading" className="text-xs font-semibold text-fog-600 uppercase tracking-wider mb-3 px-1">
+              <section aria-labelledby="past-heading" className="pt-3">
+                <h2 id="past-heading" className="text-[12px] leading-[17px] text-fog-500 font-semibold tracking-widest uppercase mb-2 px-1">
                   Past trips
                 </h2>
                 <ul className="space-y-3 opacity-60" role="list">
@@ -103,30 +121,28 @@ export default async function HomePage() {
           </>
         )}
       </div>
-    </>
+    </main>
   );
 }
 
 function EmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60dvh] gap-4 text-center px-6">
+    <div className="rounded-[2rem] border border-white/[0.07] bg-ink-200 px-5 py-8 text-center shadow-card">
       <div
-        className="w-20 h-20 rounded-oneui-xl bg-teal-400/10 flex items-center justify-center text-4xl"
+        className="mx-auto mb-4 h-20 w-20 rounded-[2rem] bg-blue-400/[0.12] flex items-center justify-center"
         aria-hidden="true"
       >
-        🧳
+        <Luggage size={34} className="text-blue-300" strokeWidth={1.7} />
       </div>
-      <div>
-        <h2 className="text-lg font-semibold text-fog-100 mb-1">No trips yet</h2>
-        <p className="text-sm text-fog-600 max-w-[240px] mx-auto leading-relaxed">
-          Create your first trip and WearWise Go will build your packing list from your wardrobe.
-        </p>
-      </div>
+      <h2 className="text-[20px] leading-[26px] font-semibold text-fog-100">No trips yet</h2>
+      <p className="mt-2 text-[14px] leading-6 text-fog-400 max-w-[280px] mx-auto">
+        Create a route, then WearWise Go will build the packing list from your kit.
+      </p>
       <Link
         href="/trips/new"
-        className="inline-flex items-center gap-2 px-6 py-3 bg-teal-400 text-ink-0 rounded-oneui font-medium text-sm hover:bg-teal-500 active:bg-teal-600 transition-colors"
+        className="mt-5 inline-flex h-12 items-center gap-2 rounded-full bg-blue-400 px-6 text-[14px] font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-600"
       >
-        <Plus size={18} aria-hidden="true" />
+        <Route size={17} aria-hidden="true" />
         New trip
       </Link>
     </div>

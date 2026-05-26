@@ -28,7 +28,7 @@ Intelligent packing lists for multi-destination trips. Built as a companion to t
 
 ## Design
 
-Samsung OneUI-inspired AMOLED dark UI. Teal accent (`#18B7A6`). Ink scale with teal-tinted neutrals.
+Samsung One UI-inspired AMOLED dark UI with a blue travel accent (`#4B8DFF`), rounded system surfaces, floating pill navigation, and blue-tinted ink neutrals. It is designed as a sibling to the crimson WearWise wardrobe app rather than a separate visual language.
 
 ## Getting started
 

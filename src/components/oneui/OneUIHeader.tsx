@@ -13,7 +13,7 @@ export function OneUIHeader({ title, subtitle, left, right, className }: OneUIHe
   return (
     <header
       className={cn(
-        'sticky top-0 z-40 flex items-center gap-3 px-4 pt-safe bg-ink-0/90 backdrop-blur-md border-b border-ink-200',
+        'sticky top-0 z-40 flex items-center gap-3 px-4 pt-safe bg-ink-0/[0.88] backdrop-blur-md border-b border-white/[0.06]',
         subtitle ? 'py-3' : 'py-4',
         className,
       )}

@@ -4,9 +4,9 @@
 
 /* ─── CSS custom properties ─── */
 :root {
-  --teal-primary: #18B7A6;
-  --teal-hover:   #129889;
-  --teal-pressed: #0C6F66;
+  --blue-primary: #4B8DFF;
+  --blue-hover:   #2F6FEB;
+  --blue-pressed: #1D4ED8;
 
   --radius-oneui-sm: 12px;
   --radius-oneui:    20px;
@@ -60,7 +60,7 @@ body {
 
 /* ─── Focus ring ─── */
 :focus-visible {
-  outline: 2px solid theme('colors.teal.400');
+  outline: 2px solid theme('colors.blue.400');
   outline-offset: 2px;
 }
 

@@ -37,7 +37,7 @@ export function InstallPrompt() {
       aria-live="polite"
       className="fixed bottom-20 inset-x-4 z-50 flex items-center gap-3 bg-ink-200 border border-ink-400 rounded-oneui px-4 py-3 shadow-xl animate-slide-up"
     >
-      <Download size={18} className="text-teal-400 shrink-0" aria-hidden="true" />
+      <Download size={18} className="text-blue-400 shrink-0" aria-hidden="true" />
       <p className="flex-1 text-sm text-fog-200 leading-snug">
         Install WearWise Go for offline access
       </p>

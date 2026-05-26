@@ -16,7 +16,7 @@ export function CriticalSection({ items, onToggle }: CriticalSectionProps) {
   const allPacked   = packedCount === items.length;
 
   return (
-    <section aria-labelledby="section-critical" className="bg-amber-500/8 border border-amber-500/25 rounded-oneui-lg overflow-hidden">
+    <section aria-labelledby="section-critical" className="bg-amber-500/[0.08] border border-amber-500/25 rounded-[1.65rem] overflow-hidden shadow-card">
       <div className="flex items-center gap-3 px-4 py-3.5">
         <AlertTriangle size={18} className="text-amber-400 shrink-0" aria-hidden="true" />
         <div className="flex-1 min-w-0">
@@ -42,7 +42,7 @@ export function CriticalSection({ items, onToggle }: CriticalSectionProps) {
               aria-label={`${item.name}${item.quantity > 1 ? `, quantity ${item.quantity}` : ''}${item.packed ? ', checked' : ', not checked'}`}
               className={cn(
                 'w-full flex items-center gap-3 px-4 py-3 text-left transition-colors',
-                'hover:bg-amber-500/8 active:bg-amber-500/12',
+                'hover:bg-amber-500/[0.08] active:bg-amber-500/[0.12]',
               )}
             >
               <div
@@ -54,7 +54,7 @@ export function CriticalSection({ items, onToggle }: CriticalSectionProps) {
                 )}
                 aria-hidden="true"
               >
-                {item.packed && <Check size={11} className="text-ink-0" strokeWidth={3} />}
+                {item.packed && <Check size={11} className="text-white" strokeWidth={3} />}
               </div>
 
               <div className="flex-1 min-w-0">
@@ -62,7 +62,7 @@ export function CriticalSection({ items, onToggle }: CriticalSectionProps) {
                   'text-sm leading-snug block font-medium',
                   item.packed ? 'text-fog-600 line-through' : 'text-fog-100',
                 )}>
-                  {item.quantity > 1 ? `${item.quantity}× ` : ''}{item.name}
+                  {item.quantity > 1 ? `${item.quantity}x ` : ''}{item.name}
                 </span>
                 {item.destination_label && (
                   <span className="text-[10px] text-amber-400/70 font-medium uppercase tracking-wide mt-0.5 block">

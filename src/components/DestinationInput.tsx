@@ -44,7 +44,7 @@ export function DestinationInput({ destinations, onChange }: DestinationInputPro
               className={cn(
                 'flex-1 bg-ink-300 text-fog-100 rounded-oneui-sm px-3 py-2 text-sm',
                 'placeholder:text-fog-700 outline-none',
-                'focus:ring-2 focus:ring-teal-400',
+                'focus:ring-2 focus:ring-blue-400',
               )}
             />
             {destinations.length > 1 && (
@@ -68,7 +68,7 @@ export function DestinationInput({ destinations, onChange }: DestinationInputPro
               max={90}
               onChange={e => update(i, { nights: Math.max(1, parseInt(e.target.value) || 1) })}
               aria-label={`Nights in destination ${i + 1}`}
-              className="w-16 bg-ink-300 text-fog-100 rounded-oneui-sm px-2 py-1.5 text-sm text-center outline-none focus:ring-2 focus:ring-teal-400"
+              className="w-16 bg-ink-300 text-fog-100 rounded-oneui-sm px-2 py-1.5 text-sm text-center outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
 
@@ -84,7 +84,7 @@ export function DestinationInput({ destinations, onChange }: DestinationInputPro
                   className={cn(
                     'px-2.5 py-1 rounded-full text-xs font-medium transition-colors capitalize',
                     dest.situation === sit
-                      ? 'bg-teal-400 text-ink-0'
+                      ? 'bg-blue-400 text-white'
                       : 'bg-ink-300 text-fog-500 hover:bg-ink-400 hover:text-fog-200',
                   )}
                 >
@@ -100,7 +100,7 @@ export function DestinationInput({ destinations, onChange }: DestinationInputPro
         <button
           type="button"
           onClick={add}
-          className="w-full py-2.5 rounded-oneui border border-dashed border-ink-400 text-sm text-fog-600 hover:border-teal-400 hover:text-teal-400 transition-colors flex items-center justify-center gap-2"
+          className="w-full py-2.5 rounded-oneui border border-dashed border-ink-400 text-sm text-fog-600 hover:border-blue-400 hover:text-blue-400 transition-colors flex items-center justify-center gap-2"
         >
           <Plus size={14} aria-hidden="true" />
           Add destination

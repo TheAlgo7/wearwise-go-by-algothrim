@@ -6,7 +6,7 @@ import { InstallPrompt } from '@/components/InstallPrompt';
 
 export const metadata: Metadata = {
   title: {
-    default:  'WearWise Go',
+    default: 'WearWise Go',
     template: '%s · WearWise Go',
   },
   description: 'Pack like you already remembered everything.',
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#18B7A6',
+  themeColor: '#05070C',
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
@@ -30,7 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className="h-full">
       <body className="h-full bg-ink-0 text-fog-100 font-sans antialiased overflow-x-hidden">
         <ServiceWorkerRegister />
-        <main className="min-h-dvh pb-nav">{children}</main>
+        <main className="mx-auto max-w-xl min-h-dvh pb-nav">{children}</main>
         <BottomNav />
         <InstallPrompt />
       </body>

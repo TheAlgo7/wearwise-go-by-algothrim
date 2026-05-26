@@ -96,7 +96,7 @@ export default function TripDetailPage() {
   if (loading) {
     return (
       <div className="min-h-dvh flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-teal-400 border-t-transparent animate-spin" aria-label="Loading" />
+        <div className="w-8 h-8 rounded-full border-2 border-blue-400 border-t-transparent animate-spin" aria-label="Loading" />
       </div>
     );
   }
@@ -165,14 +165,14 @@ export default function TripDetailPage() {
         {/* Trip metadata */}
         <div className="bg-ink-100 rounded-oneui-lg px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm text-fog-400">
-            <MapPin size={14} className="text-teal-400" aria-hidden="true" />
+            <MapPin size={14} className="text-blue-400" aria-hidden="true" />
             {trip.destinations.length} destination{trip.destinations.length !== 1 ? 's' : ''}
             <span className="text-fog-700">·</span>
             {trip.destinations.reduce((s, d) => s + d.nights, 0)} nights
             {trip.is_work && (
               <>
                 <span className="text-fog-700">·</span>
-                <span className="text-teal-400/80 text-xs font-medium">Work</span>
+                <span className="text-blue-400/80 text-xs font-medium">Work</span>
               </>
             )}
           </div>
@@ -187,7 +187,7 @@ export default function TripDetailPage() {
             {weather.map(w => (
               <div key={w.city} className="shrink-0 bg-ink-100 rounded-oneui px-3 py-2 text-center min-w-[96px]">
                 <p className="text-xs text-fog-600 truncate">{w.city}</p>
-                <p className="text-lg font-semibold text-teal-400">{w.tempC}°C</p>
+                <p className="text-lg font-semibold text-blue-400">{w.tempC}°C</p>
                 <p className="text-[10px] text-fog-700 capitalize truncate">{w.description}</p>
               </div>
             ))}
@@ -214,8 +214,8 @@ export default function TripDetailPage() {
 
         {/* AI reasoning */}
         {reasoning && (
-          <div className="bg-teal-400/8 border border-teal-400/20 rounded-oneui-lg px-4 py-3">
-            <p className="text-xs font-semibold text-teal-400 mb-1">Packing intelligence</p>
+          <div className="bg-blue-400/[0.08] border border-blue-400/20 rounded-oneui-lg px-4 py-3">
+            <p className="text-xs font-semibold text-blue-400 mb-1">Packing intelligence</p>
             <p className="text-sm text-fog-300 leading-relaxed">{reasoning}</p>
           </div>
         )}
@@ -226,7 +226,7 @@ export default function TripDetailPage() {
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-fog-400">{packedCount} of {totalCount} packed</span>
               {packedCount === totalCount && (
-                <span className="text-sm font-semibold text-teal-400">All packed!</span>
+                <span className="text-sm font-semibold text-blue-400">All packed!</span>
               )}
             </div>
             <div
@@ -237,7 +237,7 @@ export default function TripDetailPage() {
               aria-valuemax={100}
             >
               <div
-                className="h-full bg-teal-400 rounded-full transition-all duration-500"
+                className="h-full bg-blue-400 rounded-full transition-all duration-500"
                 style={{ width: `${(packedCount / totalCount) * 100}%` }}
               />
             </div>
