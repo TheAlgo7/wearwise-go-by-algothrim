@@ -11,6 +11,7 @@ export interface Database {
           transport:     string;
           destinations:  Json;
           carry_on_only: boolean;
+          is_work:       boolean;
           created_at:    string;
           updated_at:    string;
         };
@@ -19,15 +20,17 @@ export interface Database {
       };
       packing_lists: {
         Row: {
-          id:          string;
-          trip_id:     string;
-          category:    string;
-          name:        string;
-          quantity:    number;
-          packed:      boolean;
-          is_clothing: boolean;
-          notes:       string | null;
-          created_at:  string;
+          id:                string;
+          trip_id:           string;
+          category:          string;
+          name:              string;
+          quantity:          number;
+          packed:            boolean;
+          is_clothing:       boolean;
+          priority:          string;
+          notes:             string | null;
+          destination_label: string | null;
+          created_at:        string;
         };
         Insert: Omit<Database['public']['Tables']['packing_lists']['Row'], 'id' | 'created_at'>;
         Update: Partial<Database['public']['Tables']['packing_lists']['Insert']>;

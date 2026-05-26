@@ -58,6 +58,7 @@ export async function POST(req: NextRequest) {
 
   // Persist to Supabase
   const allItems = [
+    ...packingList.critical,
     ...packingList.clothing,
     ...packingList.grooming,
     ...packingList.electronics,

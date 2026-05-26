@@ -3,13 +3,13 @@
 import { useState } from 'react';
 import { Check, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/cn';
-import { CATEGORY_ICONS } from '@/lib/constants';
+import { CATEGORY_ICONS, CATEGORY_LABELS } from '@/lib/constants';
 import type { PackingItem, PackingCategory } from '@/types';
 
 interface PackingSectionProps {
-  category:    PackingCategory;
-  items:       PackingItem[];
-  onToggle:    (itemId: string, packed: boolean) => void;
+  category: PackingCategory;
+  items:    PackingItem[];
+  onToggle: (itemId: string, packed: boolean) => void;
 }
 
 export function PackingSection({ category, items, onToggle }: PackingSectionProps) {
@@ -29,8 +29,8 @@ export function PackingSection({ category, items, onToggle }: PackingSectionProp
       >
         <span className="text-lg" aria-hidden="true">{CATEGORY_ICONS[category]}</span>
         <div className="flex-1 min-w-0">
-          <h2 id={`section-${category}`} className="text-sm font-semibold text-fog-100 capitalize">
-            {category}
+          <h2 id={`section-${category}`} className="text-sm font-semibold text-fog-100">
+            {CATEGORY_LABELS[category] ?? category}
           </h2>
           <p className="text-xs text-fog-600 mt-0.5">
             {packedCount}/{items.length} packed
@@ -60,7 +60,6 @@ export function PackingSection({ category, items, onToggle }: PackingSectionProp
                   'hover:bg-ink-200 active:bg-ink-300',
                 )}
               >
-                {/* Checkbox */}
                 <div
                   className={cn(
                     'w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors',
@@ -80,6 +79,11 @@ export function PackingSection({ category, items, onToggle }: PackingSectionProp
                   )}>
                     {item.quantity > 1 ? `${item.quantity}× ` : ''}{item.name}
                   </span>
+                  {item.destination_label && (
+                    <span className="text-[10px] text-teal-400/70 font-medium uppercase tracking-wide mt-0.5 block">
+                      {item.destination_label}
+                    </span>
+                  )}
                   {item.notes && (
                     <span className="text-xs text-fog-700 block mt-0.5">{item.notes}</span>
                   )}

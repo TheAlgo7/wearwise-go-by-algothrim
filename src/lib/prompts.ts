@@ -1,13 +1,16 @@
 import type { Trip, DestinationWeather, GeneratedPackingList } from '@/types';
-import { TRANSPORT_LABELS } from './constants';
+import { TRANSPORT_LABELS, URGENCY_DAYS } from './constants';
 
 export function buildPackingPrompt(
   trip: Trip,
   weather: DestinationWeather[],
   engineList: Omit<GeneratedPackingList, 'reasoning'>,
 ): string {
-  const totalNights = trip.destinations.reduce((sum, d) => sum + d.nights, 0);
-  const isPlane     = trip.transport === 'plane';
+  const totalNights  = trip.destinations.reduce((sum, d) => sum + d.nights, 0);
+  const isPlane      = trip.transport === 'plane';
+  const departure    = new Date(trip.departure + 'T00:00:00');
+  const daysUntil    = Math.ceil((departure.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+  const isUrgent     = daysUntil <= URGENCY_DAYS;
 
   const weatherSummary = weather
     .map(w => `${w.city}: ${w.tempC}°C, ${w.description}, humidity ${w.humidity}%`)
@@ -18,7 +21,7 @@ export function buildPackingPrompt(
     .join(' → ');
 
   const formatSection = (items: GeneratedPackingList[keyof Omit<GeneratedPackingList, 'reasoning'>]) =>
-    items.map(i => `- ${i.quantity}× ${i.name}${i.notes ? ` [${i.notes}]` : ''}`).join('\n');
+    items.map(i => `- ${i.quantity}× ${i.name}${i.destination_label ? ` [for ${i.destination_label}]` : ''}${i.notes ? ` (${i.notes})` : ''}`).join('\n');
 
   const systemPrompt = `You are a meticulous packing expert who gives concrete, honest, no-fluff advice.
 You know that the worst packing mistake is not forgetting something — it is bringing too much and arriving exhausted.
@@ -32,8 +35,9 @@ Rules:
 - No em dashes`;
 
   const userPrompt = `Trip: ${trip.name}
-Departure: ${trip.departure}
+Departure: ${trip.departure}${isUrgent ? ' — URGENT, leaving very soon' : ''}
 Transport: ${TRANSPORT_LABELS[trip.transport]}${isPlane && trip.carry_on_only ? ' — carry-on only' : ''}
+Work trip: ${trip.is_work ? 'Yes' : 'No'}
 Itinerary: ${destinationSummary}
 Total: ${totalNights} night${totalNights !== 1 ? 's' : ''}
 
@@ -41,6 +45,9 @@ Weather at destinations:
 ${weatherSummary}
 
 Deterministic packing list generated:
+
+DON'T FORGET (critical):
+${formatSection(engineList.critical)}
 
 CLOTHING:
 ${formatSection(engineList.clothing)}
@@ -57,7 +64,7 @@ ${formatSection(engineList.documents)}
 MISC:
 ${formatSection(engineList.misc)}
 
-Review this list and give a concise packing intelligence note: what to add, what to cut, and any situational watch-outs.`;
+Review this list and give a concise packing intelligence note: what to add, what to cut, and any situational watch-outs.${isUrgent ? ' Start with the single most critical item to grab first.' : ''}`;
 
   return JSON.stringify({ system: systemPrompt, user: userPrompt });
 }

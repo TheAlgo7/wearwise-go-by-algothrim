@@ -24,6 +24,7 @@ export default function NewTripPage() {
   const [transport,    setTransport]    = useState<TransportMode>('plane');
   const [destinations, setDestinations] = useState<Destination[]>([{ city: '', nights: 3 }]);
   const [carryOnOnly,  setCarryOnOnly]  = useState(false);
+  const [isWork,       setIsWork]       = useState(false);
   const [loading,      setLoading]      = useState(false);
   const [error,        setError]        = useState('');
 
@@ -49,6 +50,7 @@ export default function NewTripPage() {
           transport,
           destinations:  destinations as unknown as import('@/lib/supabase/types').Json,
           carry_on_only: carryOnOnly,
+          is_work:       isWork,
         })
         .select('id')
         .single();
@@ -156,6 +158,19 @@ export default function NewTripPage() {
             />
           </div>
         )}
+
+        {/* Work trip */}
+        <div className="flex items-center justify-between py-1">
+          <div>
+            <p className="text-sm font-medium text-fog-200">Work trip</p>
+            <p className="text-xs text-fog-600 mt-0.5">Adds laptop, business documents</p>
+          </div>
+          <OneUIToggle
+            checked={isWork}
+            onChange={setIsWork}
+            aria-label="Work trip"
+          />
+        </div>
 
         {/* Destinations */}
         <DestinationInput destinations={destinations} onChange={setDestinations} />

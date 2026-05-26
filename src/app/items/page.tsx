@@ -5,6 +5,8 @@ import type { TravelItem, PackingCategory } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
+type NormalCategory = Exclude<(typeof CATEGORY_ORDER)[number], 'critical'>;
+
 export default async function ItemsPage() {
   const supabase = await createClient();
 
@@ -15,7 +17,9 @@ export default async function ItemsPage() {
 
   const items = (error ? [] : (data ?? [])) as TravelItem[];
 
-  const byCategory = CATEGORY_ORDER.reduce<Record<PackingCategory, TravelItem[]>>(
+  const normalCategories = CATEGORY_ORDER.filter((c): c is NormalCategory => c !== 'critical');
+
+  const byCategory = normalCategories.reduce<Record<PackingCategory, TravelItem[]>>(
     (acc, cat) => {
       acc[cat] = items.filter(i => i.category === cat);
       return acc;
@@ -39,7 +43,7 @@ export default async function ItemsPage() {
             </p>
           </div>
         ) : (
-          CATEGORY_ORDER.map(cat => {
+          normalCategories.map(cat => {
             const catItems = byCategory[cat];
             if (catItems.length === 0) return null;
 

@@ -3,17 +3,20 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Sparkles, Trash2, MapPin } from 'lucide-react';
+import { ArrowLeft, Sparkles, Trash2, MapPin, Zap } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { OneUIHeader, OneUIButton } from '@/components/oneui';
 import { PackingSection } from '@/components/PackingSection';
-import { CATEGORY_ORDER } from '@/lib/constants';
+import { CriticalSection } from '@/components/CriticalSection';
+import { CATEGORY_ORDER, URGENCY_DAYS } from '@/lib/constants';
 import { cn } from '@/lib/cn';
 import type { Trip, PackingItem, PackingCategory, DestinationWeather } from '@/types';
 
+type NormalCategory = Exclude<(typeof CATEGORY_ORDER)[number], 'critical'>;
+
 export default function TripDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const router  = useRouter();
+  const router   = useRouter();
   const supabase = createClient();
 
   const [trip,      setTrip]      = useState<Trip | null>(null);
@@ -24,7 +27,6 @@ export default function TripDetailPage() {
   const [packing,   setPacking]   = useState(false);
   const [error,     setError]     = useState('');
 
-  // Load trip + existing packing list
   const loadTrip = useCallback(async () => {
     setLoading(true);
     const { data: tripData } = await supabase
@@ -48,25 +50,21 @@ export default function TripDetailPage() {
 
   useEffect(() => { loadTrip(); }, [loadTrip]);
 
-  // Generate packing list via AI
   const generateList = async () => {
     if (!trip || packing) return;
     setPacking(true);
     setError('');
 
     try {
-      // Fetch weather for all destinations
       const cities = trip.destinations.map(d => d.city).join(',');
       const wRes   = await fetch(`/api/weather?cities=${encodeURIComponent(cities)}`);
       const wData  = await wRes.json();
       const weatherData: DestinationWeather[] = wData.weather ?? [];
       setWeather(weatherData);
 
-      // Delete existing list first
       await supabase.from('packing_lists').delete().eq('trip_id', id);
 
-      // Call pack API
-      const pRes  = await fetch('/api/pack', {
+      const pRes = await fetch('/api/pack', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ trip, weather: weatherData }),
@@ -84,13 +82,11 @@ export default function TripDetailPage() {
     }
   };
 
-  // Toggle item packed state
   const toggleItem = async (itemId: string, packed: boolean) => {
     setItems(prev => prev.map(i => i.id === itemId ? { ...i, packed } : i));
     await supabase.from('packing_lists').update({ packed }).eq('id', itemId);
   };
 
-  // Delete trip
   const deleteTrip = async () => {
     if (!confirm(`Delete "${trip?.name}"? This cannot be undone.`)) return;
     await supabase.from('trips').delete().eq('id', id);
@@ -107,9 +103,18 @@ export default function TripDetailPage() {
 
   if (!trip) return null;
 
-  const byCategory = CATEGORY_ORDER.reduce<Record<PackingCategory, PackingItem[]>>(
+  const departure   = new Date(trip.departure + 'T00:00:00');
+  const daysUntil   = Math.ceil((departure.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+  const isUrgent    = daysUntil <= URGENCY_DAYS && daysUntil >= 0;
+  const cityNames   = trip.destinations.map(d => d.city.split(',')[0]).join(' → ');
+
+  const criticalItems = items.filter(i => i.priority === 'critical');
+  const normalItems   = items.filter(i => i.priority !== 'critical');
+
+  const normalCategories = CATEGORY_ORDER.filter((c): c is NormalCategory => c !== 'critical');
+  const byCategory = normalCategories.reduce<Record<NormalCategory, PackingItem[]>>(
     (acc, cat) => {
-      acc[cat] = items.filter(i => i.category === cat);
+      acc[cat] = normalItems.filter(i => i.category === cat);
       return acc;
     },
     { clothing: [], grooming: [], electronics: [], documents: [], misc: [] },
@@ -117,10 +122,6 @@ export default function TripDetailPage() {
 
   const totalCount  = items.length;
   const packedCount = items.filter(i => i.packed).length;
-
-  const departure   = new Date(trip.departure + 'T00:00:00');
-  const daysUntil   = Math.ceil((departure.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-  const cityNames   = trip.destinations.map(d => d.city.split(',')[0]).join(' → ');
 
   return (
     <>
@@ -148,6 +149,19 @@ export default function TripDetailPage() {
       />
 
       <div className="px-4 pt-4 pb-8 space-y-4">
+        {/* Urgency banner */}
+        {isUrgent && (
+          <div
+            role="alert"
+            className="flex items-center gap-3 bg-amber-500/10 border border-amber-500/30 rounded-oneui-lg px-4 py-3"
+          >
+            <Zap size={16} className="text-amber-400 shrink-0" aria-hidden="true" />
+            <p className="text-sm font-semibold text-amber-400">
+              {daysUntil === 0 ? "Leaving today — pack now!" : "Leaving tomorrow — pack tonight!"}
+            </p>
+          </div>
+        )}
+
         {/* Trip metadata */}
         <div className="bg-ink-100 rounded-oneui-lg px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm text-fog-400">
@@ -155,6 +169,12 @@ export default function TripDetailPage() {
             {trip.destinations.length} destination{trip.destinations.length !== 1 ? 's' : ''}
             <span className="text-fog-700">·</span>
             {trip.destinations.reduce((s, d) => s + d.nights, 0)} nights
+            {trip.is_work && (
+              <>
+                <span className="text-fog-700">·</span>
+                <span className="text-teal-400/80 text-xs font-medium">Work</span>
+              </>
+            )}
           </div>
           <span className={cn('text-sm font-medium', daysUntil <= 3 && daysUntil > 0 ? 'text-amber-400' : 'text-fog-500')}>
             {daysUntil === 0 ? 'Today' : daysUntil < 0 ? 'Departed' : `${daysUntil}d away`}
@@ -227,7 +247,10 @@ export default function TripDetailPage() {
         {/* Packing sections */}
         {totalCount > 0 && (
           <div className="space-y-3">
-            {CATEGORY_ORDER.map(cat => {
+            {/* Critical "Don't forget" always first */}
+            <CriticalSection items={criticalItems} onToggle={toggleItem} />
+
+            {normalCategories.map(cat => {
               const catItems = byCategory[cat];
               if (catItems.length === 0) return null;
               return (

@@ -6,16 +6,18 @@ import type {
   GeneratedPackingList,
   PackingItem,
   PackingCategory,
+  PackingPriority,
+  Destination,
 } from '@/types';
 import {
   OUTFIT_BUFFER,
   UNDERWEAR_BUFFER,
   TEMP_COLD,
   TEMP_COOL,
+  TEMP_WARM,
   PLANE_LIQUID_ML_LIMIT,
+  LONG_TRIP_NIGHTS,
 } from './constants';
-
-// ─── Deterministic packing list from wardrobe + rules ────────────────────────
 
 export interface EngineInput {
   trip:         Trip;
@@ -24,84 +26,198 @@ export interface EngineInput {
   weather:      DestinationWeather[];
 }
 
+// ─── Per-destination analysis ────────────────────────────────────────────────
+
+interface DestAnalysis {
+  dest:      Destination;
+  label:     string;
+  tempC:     number;
+  isCold:    boolean;
+  isCool:    boolean;
+  isHot:     boolean;
+  nights:    number;
+}
+
+function analyzeDestinations(destinations: Destination[], weather: DestinationWeather[]): DestAnalysis[] {
+  return destinations.map((dest, i) => {
+    const cityName = dest.city.split(',')[0].toLowerCase();
+    const w = weather.find(w => w.city.toLowerCase().includes(cityName)) ?? weather[i];
+    const tempC = w?.tempC ?? 22;
+    return {
+      dest,
+      label:  dest.city.split(',')[0],
+      tempC,
+      isCold: tempC < TEMP_COLD,
+      isCool: tempC < TEMP_COOL,
+      isHot:  tempC >= TEMP_WARM,
+      nights: dest.nights,
+    };
+  });
+}
+
+// ─── Main engine ─────────────────────────────────────────────────────────────
+
 export function buildPackingList(input: EngineInput): Omit<GeneratedPackingList, 'reasoning'> {
   const { trip, travelItems, packingRules, weather } = input;
 
-  const totalNights = trip.destinations.reduce((sum, d) => sum + d.nights, 0);
-  const coldestTempC = weather.length
-    ? Math.min(...weather.map(w => w.tempC))
-    : 20;
+  // ── Context ────────────────────────────────────────────────────────────────
+  const totalNights    = trip.destinations.reduce((s, d) => s + d.nights, 0);
+  const isPlane        = trip.transport === 'plane';
+  const isCar          = trip.transport === 'car';
+  const isTrain        = trip.transport === 'train';
+  const carryOnOnly    = trip.carry_on_only;
+  const isWork         = trip.is_work ?? false;
+  const isMultiDest    = trip.destinations.length > 1;
 
-  const situations = trip.destinations
-    .flatMap(d => (d.situation ? [d.situation] : []))
-    .filter((s, i, arr) => arr.indexOf(s) === i);
+  const destAnalysis   = analyzeDestinations(trip.destinations, weather);
+  const coldestDest    = destAnalysis.reduce((a, b) => a.tempC < b.tempC ? a : b);
+  const hottestDest    = destAnalysis.reduce((a, b) => a.tempC > b.tempC ? a : b);
 
-  const isPlane      = trip.transport === 'plane';
-  const isCold       = coldestTempC < TEMP_COLD;
-  const isCool       = coldestTempC < TEMP_COOL;
+  const situations     = trip.destinations
+    .flatMap(d => d.situation ? [d.situation] : [])
+    .filter((s, i, a) => a.indexOf(s) === i);
+
+  const hasBeach    = situations.some(s => ['beach', 'resort'].includes(s));
+  const hasMountain = situations.some(s => s === 'mountain');
+  const hasBusiness = situations.some(s => s === 'business') || isWork;
+  const hasCold     = situations.some(s => s === 'cold') || coldestDest.isCold;
+  const hasSunny    = hasBeach || hasMountain || hottestDest.isHot;
+
+  const wardrobeClothing = travelItems.filter(i => i.is_clothing);
+
+  // ── Critical — Don't Forget ────────────────────────────────────────────────
+  const critical: PackingItem[] = [];
+
+  const crit = (name: string, cat: PackingCategory, qty = 1, isClothing = false, notes?: string) =>
+    critical.push(makeItem(trip.id, name, cat, qty, isClothing, notes, undefined, 'critical'));
+
+  // Non-negotiables
+  crit('Power bank',              'electronics', 1, false, 'Charge the night before');
+  crit('Phone charger',           'electronics', 1, false);
+  crit('Wallet + cash',           'misc',        1, false);
+  crit(isPlane ? 'Passport' : 'Government ID / Aadhaar', 'documents', 1, false);
+  crit('Toothbrush',              'grooming',    1, false);
+  crit('Medicines / supplements', 'misc',        1, false, 'If applicable — do not forget');
+
+  // Situational critical
+  if (hasBeach || situations.includes('resort')) {
+    crit('Swimwear', 'clothing', 2, true, 'Easy to forget — pack this first');
+  }
+  if (hasCold || hasMountain) {
+    crit('Thermals (top + bottom)', 'clothing', 2, true, 'Non-negotiable for cold stops');
+    crit('Gloves + beanie',         'clothing', 1, true);
+  }
+  if (hasSunny || hasMountain) {
+    crit('Sunglasses', 'misc', 1, false, hasMountain ? 'Snow glare is intense' : undefined);
+  }
+  if (isPlane) {
+    crit('Boarding pass / e-ticket', 'documents', 1, false, 'Screenshot offline or print');
+  }
+  if (hasBusiness) {
+    crit('Laptop charger', 'electronics', 1, false);
+  }
+  if (isTrain && totalNights >= 1) {
+    crit('Snacks for the journey', 'misc', 1, false);
+  }
 
   // ── Clothing ──────────────────────────────────────────────────────────────
   const clothing: PackingItem[] = [];
 
-  // Filter wardrobe clothing by warmth/cold appropriateness
-  const wardrobeClothing = travelItems.filter(i => i.is_clothing);
-  const outerLayers = wardrobeClothing.filter(i => i.layer === 'outer');
-  const midLayers   = wardrobeClothing.filter(i => i.layer === 'mid');
-  const baseTops    = wardrobeClothing.filter(i => i.layer === 'base');
-  const bottoms     = wardrobeClothing.filter(i => i.layer === 'bottom');
-  const footwear    = wardrobeClothing.filter(i => i.layer === 'footwear');
+  const outfitBuffer    = isCar ? OUTFIT_BUFFER + 1 : OUTFIT_BUFFER;
+  const topsNeeded      = totalNights + outfitBuffer;
+  const bottomsNeeded   = Math.max(1, Math.ceil(totalNights / 2)) + outfitBuffer;
+  const underwearNeeded = totalNights + UNDERWEAR_BUFFER;
+  const socksNeeded     = totalNights + UNDERWEAR_BUFFER;
+  const sleepwearSets   = Math.max(1, Math.ceil(totalNights / 3));
 
-  const topsNeeded       = totalNights + OUTFIT_BUFFER;
-  const bottomsNeeded    = Math.max(1, Math.ceil(totalNights / 2)) + OUTFIT_BUFFER;
-  const underwearNeeded  = totalNights + UNDERWEAR_BUFFER;
-  const socksNeeded      = totalNights + UNDERWEAR_BUFFER;
-
-  // Add base tops from wardrobe
+  // Tops from wardrobe
+  const baseTops = wardrobeClothing.filter(i => i.layer === 'base');
   const selectedTops = baseTops.slice(0, topsNeeded);
-  selectedTops.forEach(item => {
-    clothing.push(makeItem(trip.id, item.name, 'clothing', 1, true));
-  });
-  // Fill remaining with generic if wardrobe doesn't have enough
+  selectedTops.forEach(item => clothing.push(makeItem(trip.id, item.name, 'clothing', 1, true)));
   if (selectedTops.length < topsNeeded) {
-    const remaining = topsNeeded - selectedTops.length;
-    clothing.push(makeItem(trip.id, 'T-shirts / tops', 'clothing', remaining, true));
+    clothing.push(makeItem(trip.id, 'T-shirts / tops', 'clothing', topsNeeded - selectedTops.length, true));
   }
 
   // Bottoms
+  const bottoms = wardrobeClothing.filter(i => i.layer === 'bottom');
   const selectedBottoms = bottoms.slice(0, bottomsNeeded);
-  selectedBottoms.forEach(item => {
-    clothing.push(makeItem(trip.id, item.name, 'clothing', 1, true));
-  });
+  selectedBottoms.forEach(item => clothing.push(makeItem(trip.id, item.name, 'clothing', 1, true)));
   if (selectedBottoms.length < bottomsNeeded) {
     clothing.push(makeItem(trip.id, 'Trousers / jeans', 'clothing', bottomsNeeded - selectedBottoms.length, true));
   }
 
-  // Underwear + socks (always generic quantity items)
+  // Underwear + socks
   clothing.push(makeItem(trip.id, 'Underwear',  'clothing', underwearNeeded, true));
   clothing.push(makeItem(trip.id, 'Socks',      'clothing', socksNeeded,     true));
 
-  // Mid + outer layers for cool/cold
-  if (isCool || isCold) {
-    const mid = midLayers[0];
-    clothing.push(makeItem(trip.id, mid?.name ?? 'Light jacket / hoodie', 'clothing', 1, true));
-  }
-  if (isCold) {
-    const outer = outerLayers[0];
-    clothing.push(makeItem(trip.id, outer?.name ?? 'Heavy jacket', 'clothing', 1, true));
-    clothing.push(makeItem(trip.id, 'Thermal base layer (top + bottom)', 'clothing', 2, true));
-  }
+  // Sleepwear — always
+  clothing.push(makeItem(trip.id, 'Sleepwear / lounge clothes', 'clothing', sleepwearSets, true));
+
+  // Per-destination layering (with destination label if multi-stop)
+  const midLayers   = wardrobeClothing.filter(i => i.layer === 'mid');
+  const outerLayers = wardrobeClothing.filter(i => i.layer === 'outer');
+
+  // Track what we've added to avoid duplication across destinations
+  const addedMid   = false;
+  const addedOuter = false;
+
+  let midAdded   = false;
+  let outerAdded = false;
+
+  destAnalysis.forEach(da => {
+    // Only label if multi-destination
+    const label = isMultiDest ? da.label : undefined;
+
+    if (da.isCold && !outerAdded) {
+      const outer = outerLayers[0];
+      clothing.push(makeItem(trip.id, outer?.name ?? 'Heavy jacket / winter coat', 'clothing', 1, true, undefined, label));
+      outerAdded = true;
+    }
+    if (da.isCold && !midAdded) {
+      clothing.push(makeItem(trip.id, 'Warm socks (woollen)', 'clothing', Math.max(2, da.nights + 1), true, undefined, label));
+    }
+    if (da.isCool && !midAdded && !da.isCold) {
+      const mid = midLayers[0];
+      clothing.push(makeItem(trip.id, mid?.name ?? 'Light jacket / hoodie', 'clothing', 1, true, undefined, label));
+      midAdded = true;
+    }
+    if (da.isCold && !midAdded) {
+      const mid = midLayers[0];
+      clothing.push(makeItem(trip.id, mid?.name ?? 'Fleece / thermal mid-layer', 'clothing', 1, true, undefined, label));
+      midAdded = true;
+    }
+  });
 
   // Footwear
-  const shoe = footwear[0];
-  clothing.push(makeItem(trip.id, shoe?.name ?? 'Comfortable shoes', 'clothing', 1, true));
+  const footwear = wardrobeClothing.filter(i => i.layer === 'footwear');
+  clothing.push(makeItem(trip.id, footwear[0]?.name ?? 'Comfortable shoes / sneakers', 'clothing', 1, true));
+  if (hasMountain || hasCold) {
+    clothing.push(makeItem(trip.id, 'Warm boots / sturdy footwear', 'clothing', 1, true, 'Essential for cold terrain'));
+  }
+  if (hasBeach) {
+    clothing.push(makeItem(trip.id, 'Flip-flops / sandals', 'clothing', 1, true));
+  }
+  if (isCar && totalNights >= 3) {
+    clothing.push(makeItem(trip.id, 'Backup footwear', 'clothing', 1, true, 'Car allows the extra space'));
+  }
 
-  // ── Situational extras ────────────────────────────────────────────────────
+  // Business formals
+  if (hasBusiness) {
+    clothing.push(makeItem(trip.id, 'Formal shirt / outfit', 'clothing', 2, true));
+    clothing.push(makeItem(trip.id, 'Formal shoes', 'clothing', 1, true));
+    clothing.push(makeItem(trip.id, 'Belt', 'clothing', 1, true));
+  }
+
+  // ── Situational rules from DB ─────────────────────────────────────────────
   const situationalClothing: PackingItem[] = [];
   const situationalMisc:     PackingItem[] = [];
 
   for (const sit of situations) {
-    const rules = packingRules.filter(r => r.situation === sit);
-    rules.forEach(rule => {
+    packingRules.filter(r => r.situation === sit).forEach(rule => {
+      // Skip items already covered by critical section
+      const inCritical = critical.some(c => c.name.toLowerCase().includes(rule.item_name.toLowerCase()));
+      if (inCritical) return;
+
       const isClothing = wardrobeClothing.some(i =>
         i.name.toLowerCase().includes(rule.item_name.toLowerCase()),
       );
@@ -112,11 +228,18 @@ export function buildPackingList(input: EngineInput): Omit<GeneratedPackingList,
 
   // ── Grooming ─────────────────────────────────────────────────────────────
   const groomingItems = travelItems.filter(i => i.category === 'grooming' && !i.is_clothing);
-  let grooming: PackingItem[] = groomingItems.map(i =>
-    makeItem(trip.id, i.name, 'grooming', 1, false),
-  );
+  let grooming: PackingItem[] = groomingItems
+    .filter(i => !critical.some(c => c.name.toLowerCase().includes(i.name.toLowerCase())))
+    .map(i => makeItem(trip.id, i.name, 'grooming', 1, false));
 
-  // Plane liquid rule: add note if liquids might exceed 100ml
+  // Train overnight hygiene extras
+  if (isTrain && totalNights >= 1) {
+    grooming.push(makeItem(trip.id, 'Face wipes',       'grooming', 1, false, 'For the journey'));
+    grooming.push(makeItem(trip.id, 'Hand sanitiser',   'grooming', 1, false));
+    grooming.push(makeItem(trip.id, 'Travel towel',     'grooming', 1, false, 'For overnight comfort'));
+  }
+
+  // Plane liquid limits
   if (isPlane) {
     grooming = grooming.map(item => ({
       ...item,
@@ -128,31 +251,78 @@ export function buildPackingList(input: EngineInput): Omit<GeneratedPackingList,
 
   // ── Electronics ───────────────────────────────────────────────────────────
   const electronicsItems = travelItems.filter(i => i.category === 'electronics');
-  const electronics: PackingItem[] = electronicsItems.map(i =>
-    makeItem(trip.id, i.name, 'electronics', 1, false),
-  );
+  const electronics: PackingItem[] = electronicsItems
+    .filter(i => !critical.some(c => c.name.toLowerCase().includes(i.name.toLowerCase())))
+    .map(i => makeItem(trip.id, i.name, 'electronics', 1, false));
+
+  // Conditional laptop
+  const needsLaptop = isWork || hasBusiness || totalNights >= LONG_TRIP_NIGHTS;
+  if (needsLaptop && !electronics.some(e => e.name.toLowerCase().includes('laptop'))) {
+    electronics.push(makeItem(trip.id, 'Laptop', 'electronics', 1, false));
+  }
+
+  // Universal adapter for flights or long trips
+  if (isPlane || totalNights >= 5) {
+    electronics.push(makeItem(trip.id, 'Universal travel adapter', 'electronics', 1, false));
+  }
+
+  // Car charger
+  if (isCar) {
+    electronics.push(makeItem(trip.id, 'Car charger / USB adapter', 'electronics', 1, false));
+  }
+
+  // Plane: note what goes in cabin bag
+  if (isPlane) {
+    electronics.forEach(item => {
+      if (['laptop', 'camera', 'earphone', 'earbud'].some(k => item.name.toLowerCase().includes(k))) {
+        item.notes = (item.notes ? `${item.notes} · ` : '') + 'cabin bag';
+      }
+    });
+  }
 
   // ── Documents ─────────────────────────────────────────────────────────────
   const documentItems = travelItems.filter(i => i.category === 'documents');
-  const documents: PackingItem[] = documentItems.map(i =>
-    makeItem(trip.id, i.name, 'documents', 1, false),
-  );
+  const documents: PackingItem[] = documentItems
+    .filter(i => !critical.some(c => c.name.toLowerCase().includes(i.name.toLowerCase())))
+    .map(i => makeItem(trip.id, i.name, 'documents', 1, false));
 
-  // Always include passport if travelling by plane
-  if (isPlane && !documents.some(d => d.name.toLowerCase().includes('passport'))) {
-    documents.unshift(makeItem(trip.id, 'Passport', 'documents', 1, false));
+  documents.push(makeItem(trip.id, 'Booking confirmations', 'documents', 1, false, 'Hotel, transport, activities'));
+  documents.push(makeItem(trip.id, 'Emergency contacts',    'documents', 1, false, 'Written down, not just in phone'));
+
+  if (isPlane) {
+    documents.push(makeItem(trip.id, 'Travel insurance',    'documents', 1, false));
   }
 
   // ── Misc ──────────────────────────────────────────────────────────────────
   const miscItems = travelItems.filter(i => i.category === 'misc');
   const misc: PackingItem[] = [
-    ...miscItems.map(i => makeItem(trip.id, i.name, 'misc', 1, false)),
-    makeItem(trip.id, 'Reusable water bottle', 'misc', 1, false),
-    makeItem(trip.id, 'Small backpack / daypack', 'misc', 1, false),
-    ...situationalMisc,
+    ...miscItems
+      .filter(i => !critical.some(c => c.name.toLowerCase().includes(i.name.toLowerCase())))
+      .map(i => makeItem(trip.id, i.name, 'misc', 1, false)),
+    makeItem(trip.id, 'Reusable water bottle',     'misc', 1, false),
+    makeItem(trip.id, 'Small backpack / daypack',  'misc', 1, false),
+    ...situationalMisc.filter(i => !critical.some(c => c.name.toLowerCase().includes(i.name.toLowerCase()))),
   ];
 
+  // Transport-specific misc
+  if (isCar) {
+    misc.push(makeItem(trip.id, 'Snacks for the road',    'misc', 1, false));
+    misc.push(makeItem(trip.id, 'Aux cable / phone mount', 'misc', 1, false));
+  }
+  if (isTrain) {
+    misc.push(makeItem(trip.id, 'Travel pillow / neck pillow',             'misc', 1, false));
+    misc.push(makeItem(trip.id, 'Earplugs or headphones',                  'misc', 1, false));
+  }
+  if (isPlane && carryOnOnly) {
+    misc.push(makeItem(trip.id, 'Luggage scale', 'misc', 1, false, 'Verify carry-on weight before leaving'));
+  }
+  if (hasMountain || hasCold) {
+    misc.push(makeItem(trip.id, 'Lip balm',    'misc', 1, false, 'Cold air dries lips fast'));
+    misc.push(makeItem(trip.id, 'Sunscreen',   'misc', 1, false, 'UV reflection in snow/altitude'));
+  }
+
   return {
+    critical:    dedupeItems(critical),
     clothing:    dedupeItems([...clothing, ...situationalClothing]),
     grooming:    dedupeItems(grooming),
     electronics: dedupeItems(electronics),
@@ -170,16 +340,20 @@ function makeItem(
   quantity: number,
   isClothing: boolean,
   notes?: string,
+  destinationLabel?: string,
+  priority: PackingPriority = 'normal',
 ): PackingItem {
   return {
-    id:          crypto.randomUUID(),
-    trip_id:     tripId,
+    id:                crypto.randomUUID(),
+    trip_id:           tripId,
     category,
     name,
     quantity,
-    packed:      false,
-    is_clothing: isClothing,
+    packed:            false,
+    is_clothing:       isClothing,
+    priority,
     notes,
+    destination_label: destinationLabel,
   };
 }
 
@@ -189,7 +363,12 @@ function dedupeItems(items: PackingItem[]): PackingItem[] {
     const key = item.name.toLowerCase().trim();
     if (seen.has(key)) {
       const existing = seen.get(key)!;
-      seen.set(key, { ...existing, quantity: existing.quantity + item.quantity });
+      // Keep higher priority, merge quantity
+      seen.set(key, {
+        ...existing,
+        quantity: existing.quantity + item.quantity,
+        priority: existing.priority === 'critical' || item.priority === 'critical' ? 'critical' : 'normal',
+      });
     } else {
       seen.set(key, item);
     }

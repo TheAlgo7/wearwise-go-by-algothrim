@@ -3,18 +3,19 @@
 export type TransportMode = 'plane' | 'car' | 'train' | 'bus';
 
 export interface Destination {
-  city: string;        // e.g. "Manali,IN"
-  nights: number;
-  situation?: string;  // e.g. "beach", "mountain", "business", "resort"
+  city:       string;     // e.g. "Manali,IN"
+  nights:     number;
+  situation?: string;     // e.g. "beach", "mountain", "business", "resort"
 }
 
 export interface Trip {
   id:            string;
   name:          string;
-  departure:     string;   // ISO date "YYYY-MM-DD"
+  departure:     string;  // ISO date "YYYY-MM-DD"
   transport:     TransportMode;
   destinations:  Destination[];
   carry_on_only: boolean;
+  is_work:       boolean;
   created_at:    string;
   updated_at:    string;
 }
@@ -28,45 +29,49 @@ export type PackingCategory =
   | 'documents'
   | 'misc';
 
+export type PackingPriority = 'critical' | 'normal';
+
 export interface PackingItem {
-  id:          string;
-  trip_id:     string;
-  category:    PackingCategory;
-  name:        string;
-  quantity:    number;
-  packed:      boolean;
-  is_clothing: boolean;
-  notes?:      string;
+  id:                string;
+  trip_id:           string;
+  category:          PackingCategory;
+  name:              string;
+  quantity:          number;
+  packed:            boolean;
+  is_clothing:       boolean;
+  priority:          PackingPriority;
+  notes?:            string;
+  destination_label?: string;  // e.g. "Gulmarg" for per-stop items
 }
 
 // ─── Travel items (wardrobe shared) ──────────────────────────────────────────
 
 export type ClothingLayer = 'base' | 'mid' | 'outer' | 'bottom' | 'footwear' | 'accessory';
-export type WarmthRating = 1 | 2 | 3 | 4 | 5;
+export type WarmthRating  = 1 | 2 | 3 | 4 | 5;
 export type FormalityRating = 1 | 2 | 3 | 4 | 5;
 
 export interface TravelItem {
-  id:           string;
-  name:         string;
-  category:     PackingCategory;
-  layer?:       ClothingLayer;
-  warmth?:      WarmthRating;
-  formality?:   FormalityRating;
-  color?:       string;
-  tags:         string[];
-  is_clothing:  boolean;
-  image_url?:   string;
-  created_at:   string;
+  id:          string;
+  name:        string;
+  category:    PackingCategory;
+  layer?:      ClothingLayer;
+  warmth?:     WarmthRating;
+  formality?:  FormalityRating;
+  color?:      string;
+  tags:        string[];
+  is_clothing: boolean;
+  image_url?:  string;
+  created_at:  string;
 }
 
 // ─── Packing rules ───────────────────────────────────────────────────────────
 
 export interface PackingRule {
-  id:          string;
-  situation:   string;   // e.g. "beach", "mountain"
-  item_name:   string;
-  quantity:    number;
-  notes?:      string;
+  id:        string;
+  situation: string;
+  item_name: string;
+  quantity:  number;
+  notes?:    string;
 }
 
 // ─── Weather ─────────────────────────────────────────────────────────────────
@@ -84,14 +89,8 @@ export interface DestinationWeather {
 
 // ─── Packing engine ──────────────────────────────────────────────────────────
 
-export interface PackingContext {
-  trip:        Trip;
-  weather:     DestinationWeather[];
-  coldestTempC: number;
-  totalNights: number;
-}
-
 export interface GeneratedPackingList {
+  critical:    PackingItem[];
   clothing:    PackingItem[];
   grooming:    PackingItem[];
   electronics: PackingItem[];
