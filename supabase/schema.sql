@@ -15,6 +15,7 @@ create table if not exists travel_items (
   color       text,
   tags        text[] not null default '{}',
   is_clothing boolean not null default false,
+  size_ml     smallint,                        -- liquid volume; null for solids/non-liquids
   image_url   text,
   created_at  timestamptz not null default now()
 );
