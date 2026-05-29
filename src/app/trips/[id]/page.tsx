@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Sparkles, Trash2, MapPin, Zap } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
-import { OneUIHeader, OneUIButton } from '@/components/oneui';
+import { OneUIHeader } from '@/components/oneui';
 import { PackingSection } from '@/components/PackingSection';
 import { CriticalSection } from '@/components/CriticalSection';
 import { CATEGORY_ORDER, URGENCY_DAYS } from '@/lib/constants';
@@ -217,17 +217,34 @@ export default function TripDetailPage() {
           </div>
         )}
 
-        {/* Generate button */}
-        <OneUIButton
+        {/* Generate action */}
+        <button
+          type="button"
           onClick={generateList}
-          loading={packing}
-          size="lg"
-          className="w-full"
+          disabled={packing}
+          className={cn(
+            'flex min-h-[64px] w-full items-center gap-3 rounded-[1.65rem] border border-white/[0.06] bg-ink-200 px-4 text-left shadow-card transition-all duration-200',
+            'hover:bg-ink-300 active:scale-[0.985] disabled:pointer-events-none disabled:text-fog-600',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400',
+          )}
           aria-busy={packing}
         >
-          <Sparkles size={18} aria-hidden="true" />
-          {items.length > 0 ? 'Regenerate packing list' : 'Generate packing list'}
-        </OneUIButton>
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-400/[0.12] text-blue-300" aria-hidden="true">
+            {packing ? (
+              <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" />
+            ) : (
+              <Sparkles size={18} strokeWidth={2.1} />
+            )}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[15px] font-semibold leading-5 text-fog-100">
+              {items.length > 0 ? 'Refresh packing kit' : 'Build packing kit'}
+            </span>
+            <span className="mt-0.5 block text-xs leading-4 text-fog-500">
+              Weather, route, vehicle, and trip type
+            </span>
+          </span>
+        </button>
 
         {error && (
           <p role="alert" className="text-sm text-red-400 bg-red-400/10 rounded-oneui-sm px-3 py-2">

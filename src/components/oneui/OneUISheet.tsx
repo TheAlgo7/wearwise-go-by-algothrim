@@ -35,7 +35,7 @@ export function OneUISheet({ open, onClose, title, children, className }: OneUIS
     <div className="fixed inset-0 z-[70] flex flex-col justify-end" role="dialog" aria-modal="true" aria-label={title}>
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-ink-0/70 backdrop-blur-sm animate-fade-in"
+        className="absolute inset-0 bg-ink-0/72 backdrop-blur-md animate-fade-in"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -43,7 +43,7 @@ export function OneUISheet({ open, onClose, title, children, className }: OneUIS
       <div
         ref={trapRef as React.RefObject<HTMLDivElement>}
         className={cn(
-          'relative bg-ink-100 rounded-t-oneui-xl pb-safe max-h-[90dvh] overflow-y-auto animate-slide-up',
+          'relative mx-auto w-full max-w-xl overflow-y-auto rounded-t-[2rem] border-x border-t border-white/[0.07] bg-ink-100 pb-safe shadow-[0_-24px_80px_rgba(0,0,0,0.72)] max-h-[90dvh] animate-slide-up',
           className,
         )}
       >
@@ -53,14 +53,14 @@ export function OneUISheet({ open, onClose, title, children, className }: OneUIS
         </div>
 
         {title && (
-          <div className="flex items-center justify-between px-5 py-3 border-b border-ink-200">
+          <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-3.5">
             <h2 className="text-base font-semibold text-fog-100">{title}</h2>
             <button
               onClick={onClose}
               aria-label="Close sheet"
-              className="p-1.5 rounded-full hover:bg-ink-300 transition-colors text-fog-500"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-blue-300/45 text-blue-100 transition-colors hover:bg-blue-400/10"
             >
-              <X size={18} />
+              <X size={18} strokeWidth={2.1} />
             </button>
           </div>
         )}

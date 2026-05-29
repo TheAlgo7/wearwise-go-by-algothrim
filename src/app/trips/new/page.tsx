@@ -142,7 +142,6 @@ export default function NewTripPage() {
               value={departure}
               onChange={e => setDeparture(e.target.value)}
               required
-              min={new Date().toISOString().split('T')[0]}
               className={cn(
                 'h-12 w-full rounded-oneui bg-ink-300 px-4 text-[15px] text-fog-100',
                 'appearance-none outline-none [color-scheme:dark] focus:ring-2 focus:ring-blue-400',

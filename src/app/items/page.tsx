@@ -1,8 +1,10 @@
 import { FileText, Luggage, PackageOpen, Plug, Shirt, Sparkles } from 'lucide-react';
 import type { ElementType } from 'react';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/server';
 import { OneUIHeader } from '@/components/oneui';
 import { CATEGORY_LABELS, CATEGORY_ORDER } from '@/lib/constants';
+import { getItemDisplay } from '@/lib/item-display';
 import type { TravelItem, PackingCategory } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -44,7 +46,7 @@ export default async function ItemsPage() {
         subtitle={`${items.length} item${items.length !== 1 ? 's' : ''} in your kit`}
       />
 
-      <div className="px-4 pt-4 pb-8 space-y-6">
+      <div className="px-4 pt-3 pb-8 space-y-6">
         {items.length === 0 ? (
           <div className="rounded-[2rem] border border-white/[0.07] bg-ink-200 px-5 py-8 text-center shadow-card">
             <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-blue-400/[0.12] flex items-center justify-center">
@@ -64,35 +66,16 @@ export default async function ItemsPage() {
               <section key={cat} aria-labelledby={`cat-${cat}`}>
                 <h2
                   id={`cat-${cat}`}
-                  className="text-xs font-semibold text-blue-300 uppercase tracking-widest mb-3 flex items-center gap-1.5 px-1"
+                  className="mb-2.5 flex items-center gap-1.5 px-1 text-[12px] font-semibold uppercase tracking-widest text-blue-300"
                 >
                   <Icon size={14} aria-hidden="true" />
                   {CATEGORY_LABELS[cat]}
-                  <span className="text-fog-700 font-normal normal-case">({catItems.length})</span>
+                  <span className="font-normal normal-case text-fog-700">({catItems.length})</span>
                 </h2>
 
-                <ul className="bg-ink-200 border border-white/[0.06] rounded-[1.65rem] divide-y divide-white/[0.06] shadow-card" role="list">
+                <ul className="space-y-2" role="list">
                   {catItems.map((item) => (
-                    <li key={item.id} className="flex items-center gap-3 px-4 py-3">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-fog-100 font-medium truncate">{item.name}</p>
-                        {item.tags.length > 0 && (
-                          <p className="text-xs text-fog-600 mt-0.5 truncate">
-                            {item.tags.join(', ')}
-                          </p>
-                        )}
-                      </div>
-                      {item.warmth && (
-                        <div className="shrink-0 flex gap-0.5" aria-label={`Warmth ${item.warmth} of 5`}>
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <div
-                              key={i}
-                              className={`w-1.5 h-1.5 rounded-full ${i < item.warmth! ? 'bg-blue-400' : 'bg-ink-400'}`}
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </li>
+                    <ItemRow key={item.id} item={item} />
                   ))}
                 </ul>
               </section>
@@ -101,5 +84,77 @@ export default async function ItemsPage() {
         )}
       </div>
     </>
+  );
+}
+
+function ItemRow({ item }: { item: TravelItem }) {
+  const display = getItemDisplay(item);
+  const tags = item.tags.slice(0, 3);
+  const showTags = !display.detail && tags.length > 0;
+  const FallbackIcon = CATEGORY_ICONS[item.category as NormalCategory] ?? PackageOpen;
+
+  return (
+    <li className="rounded-[1.35rem] border border-white/[0.055] bg-ink-200 px-3.5 py-2.5 shadow-card">
+      <div className="flex items-center gap-3">
+        <div className="relative flex h-[52px] w-[52px] shrink-0 items-center justify-center overflow-hidden rounded-[1rem] bg-ink-300">
+          {display.image ? (
+            <Image
+              src={display.image}
+              alt=""
+              width={104}
+              height={104}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <FallbackIcon size={23} className="text-blue-300" aria-hidden="true" />
+          )}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="truncate text-[15px] font-semibold leading-5 text-fog-100">
+                {display.title}
+              </p>
+              {display.brand && (
+                <p className="mt-0.5 truncate text-[12px] font-semibold leading-4 text-blue-300/85">
+                  {display.brand}
+                </p>
+              )}
+            </div>
+            {item.warmth && (
+              <div className="mt-1 flex shrink-0 gap-0.5" aria-label={`Warmth ${item.warmth} of 5`}>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className={`h-1.5 w-1.5 rounded-full ${i < item.warmth! ? 'bg-blue-400' : 'bg-ink-400'}`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {display.line && (
+            <p className="mt-1 line-clamp-1 text-xs leading-4 text-fog-500">
+              {display.line}
+            </p>
+          )}
+          {display.detail && (
+            <p className="mt-0.5 line-clamp-1 text-[11px] leading-4 text-fog-700">
+              {display.detail}
+            </p>
+          )}
+          {showTags && (
+            <div className="mt-2 flex min-w-0 gap-1.5 overflow-hidden">
+              {tags.map((tag) => (
+                <span key={tag} className="max-w-[7rem] truncate rounded-full bg-ink-300 px-2 py-1 text-[10px] font-medium leading-none text-fog-500">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </li>
   );
 }
