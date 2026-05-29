@@ -69,6 +69,7 @@ export interface TravelItem {
   color?:      string;
   tags:        string[];
   is_clothing: boolean;
+  size_ml?:    number | null;
   image_url?:  string;
   created_at:  string;
 }

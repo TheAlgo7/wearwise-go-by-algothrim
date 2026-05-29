@@ -129,7 +129,7 @@ export default function NewTripPage() {
               required
               className={cn(
                 'h-12 w-full rounded-oneui bg-ink-300 px-4 text-[15px] text-fog-100',
-                'placeholder:text-fog-700 outline-none focus:ring-2 focus:ring-blue-400',
+                'placeholder:text-fog-500 outline-none focus:ring-2 focus:ring-blue-400',
               )}
             />
           </label>
