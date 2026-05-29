@@ -1,6 +1,14 @@
 // ─── Trip ────────────────────────────────────────────────────────────────────
 
 export type TransportMode = 'plane' | 'car' | 'train' | 'bus';
+export type VehicleProfile =
+  | 'curvv'
+  | 'virtus_gt'
+  | 'thar_roxx'
+  | 'fortuner_legender'
+  | 'alto_k10'
+  | 'venue'
+  | 'friends_car';
 
 export interface Destination {
   city:       string;     // e.g. "Manali,IN"
@@ -13,6 +21,7 @@ export interface Trip {
   name:          string;
   departure:     string;  // ISO date "YYYY-MM-DD"
   transport:     TransportMode;
+  vehicle_profile?: VehicleProfile | null;
   destinations:  Destination[];
   carry_on_only: boolean;
   is_work:       boolean;

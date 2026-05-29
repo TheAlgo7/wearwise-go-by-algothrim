@@ -3,32 +3,37 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Plane, Car, Train, Bus } from 'lucide-react';
+import { ArrowLeft, BriefcaseBusiness, Bus, CalendarDays, Car, Luggage, Plane, Train } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { OneUIHeader, OneUIButton, OneUIToggle } from '@/components/oneui';
 import { DestinationInput } from '@/components/DestinationInput';
 import { cn } from '@/lib/cn';
-import type { TransportMode, Destination } from '@/types';
+import { DEFAULT_VEHICLE_PROFILE, VEHICLE_PROFILES } from '@/lib/vehicles';
+import type { TransportMode, Destination, VehicleProfile } from '@/types';
 
-const TRANSPORT_OPTIONS: { mode: TransportMode; label: string; Icon: React.ElementType }[] = [
-  { mode: 'plane', label: 'Flight',     Icon: Plane },
-  { mode: 'car',   label: 'Road trip',  Icon: Car   },
-  { mode: 'train', label: 'Train',      Icon: Train  },
-  { mode: 'bus',   label: 'Bus',        Icon: Bus   },
+const TRANSPORT_OPTIONS: { mode: TransportMode; label: string; hint: string; Icon: React.ElementType }[] = [
+  { mode: 'car',   label: 'Road trip',  hint: 'Your car or friends', Icon: Car   },
+  { mode: 'plane', label: 'Flight',     hint: 'Liquids, cabin bag', Icon: Plane },
+  { mode: 'train', label: 'Train',      hint: 'Rare, comfort kit',  Icon: Train },
+  { mode: 'bus',   label: 'Bus',        hint: 'Rare, pack light',   Icon: Bus   },
 ];
 
 export default function NewTripPage() {
   const router = useRouter();
   const [name,         setName]         = useState('');
   const [departure,    setDeparture]    = useState('');
-  const [transport,    setTransport]    = useState<TransportMode>('plane');
+  const [transport,    setTransport]    = useState<TransportMode>('car');
+  const [vehicleProfile, setVehicleProfile] = useState<VehicleProfile>(DEFAULT_VEHICLE_PROFILE);
   const [destinations, setDestinations] = useState<Destination[]>([{ city: '', nights: 3 }]);
   const [carryOnOnly,  setCarryOnOnly]  = useState(false);
   const [isWork,       setIsWork]       = useState(false);
   const [loading,      setLoading]      = useState(false);
   const [error,        setError]        = useState('');
 
-  useEffect(() => { const t = setTimeout(() => { document.title = 'New trip · WearWise Go'; }, 0); return () => clearTimeout(t); }, []);
+  useEffect(() => {
+    const t = setTimeout(() => { document.title = 'New trip · WearWise Go'; }, 0);
+    return () => clearTimeout(t);
+  }, []);
 
   const valid =
     name.trim() &&
@@ -44,23 +49,46 @@ export default function NewTripPage() {
 
     try {
       const supabase = createClient();
+      const tripInsert = {
+        name:          name.trim(),
+        departure,
+        transport,
+        vehicle_profile: transport === 'car' ? vehicleProfile : null,
+        destinations:  destinations as unknown as import('@/lib/supabase/types').Json,
+        carry_on_only: carryOnOnly,
+        is_work:       isWork,
+      };
       const { data, error: insertError } = await supabase
         .from('trips')
-        .insert({
-          name:          name.trim(),
-          departure,
-          transport,
-          destinations:  destinations as unknown as import('@/lib/supabase/types').Json,
-          carry_on_only: carryOnOnly,
-          is_work:       isWork,
-        })
+        .insert(tripInsert)
         .select('id')
         .single();
 
-      if (insertError) throw new Error(insertError.message);
-      if (!data) throw new Error('No trip returned');
+      let createdTrip = data;
 
-      router.push(`/trips/${data.id}`);
+      if (insertError?.message.toLowerCase().includes('vehicle_profile')) {
+        const fallback = await supabase
+          .from('trips')
+          .insert({
+            name:          tripInsert.name,
+            departure:     tripInsert.departure,
+            transport:     tripInsert.transport,
+            destinations:  tripInsert.destinations,
+            carry_on_only: tripInsert.carry_on_only,
+            is_work:       tripInsert.is_work,
+          })
+          .select('id')
+          .single();
+
+        if (fallback.error) throw new Error(fallback.error.message);
+        createdTrip = fallback.data;
+      } else if (insertError) {
+        throw new Error(insertError.message);
+      }
+
+      if (!createdTrip) throw new Error('No trip returned');
+
+      router.push(`/trips/${createdTrip.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
       setLoading(false);
@@ -71,114 +99,141 @@ export default function NewTripPage() {
     <>
       <OneUIHeader
         title="New trip"
+        subtitle="Set the route, then let Go build the kit."
         left={
           <Link
             href="/"
             aria-label="Back"
-            className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-ink-200 transition-colors"
+            className="flex h-11 w-11 items-center justify-center rounded-full text-fog-300 transition-colors hover:bg-ink-200"
           >
-            <ArrowLeft size={20} className="text-fog-300" aria-hidden="true" />
+            <ArrowLeft size={20} aria-hidden="true" />
           </Link>
         }
       />
 
-      <form onSubmit={handleSubmit} className="px-4 pt-5 pb-8 space-y-6">
-        {/* Trip name */}
-        <div className="space-y-1.5">
-          <label htmlFor="trip-name" className="text-sm font-medium text-fog-300">
-            Trip name
-          </label>
-          <input
-            id="trip-name"
-            type="text"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            placeholder="e.g. Goa Escape, Berlin Work Trip"
-            required
-            className={cn(
-              'w-full bg-ink-200 text-fog-100 rounded-oneui px-4 py-3 text-sm',
-              'placeholder:text-fog-700 outline-none focus:ring-2 focus:ring-blue-400',
-            )}
-          />
-        </div>
+      <form onSubmit={handleSubmit} className="px-4 pb-8 pt-2 space-y-4">
+        <section className="space-y-3 rounded-[1.65rem] bg-ink-100 p-4">
+          <div className="flex items-center gap-2 text-blue-300">
+            <CalendarDays size={16} aria-hidden="true" />
+            <h2 className="text-[12px] font-semibold uppercase tracking-widest">Trip details</h2>
+          </div>
 
-        {/* Departure date */}
-        <div className="space-y-1.5">
-          <label htmlFor="departure" className="text-sm font-medium text-fog-300">
-            Departure date
+          <label className="block space-y-1.5" htmlFor="trip-name">
+            <span className="text-xs font-medium text-fog-500">Trip name</span>
+            <input
+              id="trip-name"
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="Goa escape, Kashmir cold run"
+              required
+              className={cn(
+                'h-12 w-full rounded-oneui bg-ink-300 px-4 text-[15px] text-fog-100',
+                'placeholder:text-fog-700 outline-none focus:ring-2 focus:ring-blue-400',
+              )}
+            />
           </label>
-          <input
-            id="departure"
-            type="date"
-            value={departure}
-            onChange={e => setDeparture(e.target.value)}
-            required
-            min={new Date().toISOString().split('T')[0]}
-            className={cn(
-              'w-full bg-ink-200 text-fog-100 rounded-oneui px-4 py-3 text-sm',
-              'outline-none focus:ring-2 focus:ring-blue-400',
-              'appearance-none [color-scheme:dark]',
-            )}
-          />
-        </div>
 
-        {/* Transport */}
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-fog-300">How are you getting there?</p>
+          <label className="block space-y-1.5" htmlFor="departure">
+            <span className="text-xs font-medium text-fog-500">Departure date</span>
+            <input
+              id="departure"
+              type="date"
+              value={departure}
+              onChange={e => setDeparture(e.target.value)}
+              required
+              min={new Date().toISOString().split('T')[0]}
+              className={cn(
+                'h-12 w-full rounded-oneui bg-ink-300 px-4 text-[15px] text-fog-100',
+                'appearance-none outline-none [color-scheme:dark] focus:ring-2 focus:ring-blue-400',
+              )}
+            />
+          </label>
+        </section>
+
+        <section className="space-y-3">
+          <div className="px-1">
+            <h2 className="text-[12px] font-semibold uppercase tracking-widest text-blue-300">Travel mode</h2>
+          </div>
           <div className="grid grid-cols-2 gap-2" role="group" aria-label="Transport mode">
-            {TRANSPORT_OPTIONS.map(({ mode, label, Icon }) => (
+            {TRANSPORT_OPTIONS.map(({ mode, label, hint, Icon }) => (
               <button
                 key={mode}
                 type="button"
                 aria-pressed={transport === mode}
                 onClick={() => setTransport(mode)}
                 className={cn(
-                  'flex items-center gap-2.5 px-4 py-3 rounded-oneui text-sm font-medium transition-colors',
+                  'min-h-[74px] rounded-[1.35rem] px-3 py-3 text-left transition-all duration-200 active:scale-[0.98]',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400',
                   transport === mode
-                    ? 'bg-blue-400 text-ink-0'
-                    : 'bg-ink-200 text-fog-400 hover:bg-ink-300 hover:text-fog-100',
+                    ? 'bg-blue-400/20 text-blue-50 ring-1 ring-blue-300/45 shadow-card'
+                    : 'bg-ink-100 text-fog-300 hover:bg-ink-200',
                 )}
               >
-                <Icon size={16} aria-hidden="true" />
-                {label}
+                <Icon size={18} aria-hidden="true" />
+                <span className="mt-2 block text-sm font-semibold leading-5">{label}</span>
+                <span className={cn('block text-[11px] font-medium leading-4', transport === mode ? 'text-blue-100/65' : 'text-fog-600')}>
+                  {hint}
+                </span>
               </button>
             ))}
           </div>
-        </div>
+        </section>
 
-        {/* Carry-on only (plane only) */}
-        {transport === 'plane' && (
-          <div className="flex items-center justify-between py-1">
-            <div>
-              <p className="text-sm font-medium text-fog-200">Carry-on only</p>
-              <p className="text-xs text-fog-600 mt-0.5">Liquids max 100ml, tight on space</p>
+        {transport === 'car' && (
+          <section className="space-y-3">
+            <div className="px-1">
+              <h2 className="text-[12px] font-semibold uppercase tracking-widest text-blue-300">Road setup</h2>
             </div>
-            <OneUIToggle
-              checked={carryOnOnly}
-              onChange={setCarryOnOnly}
-              aria-label="Carry-on only"
-            />
-          </div>
+            <div className="-mx-1 flex gap-2 overflow-x-auto px-1 py-1 [mask-image:linear-gradient(to_right,black_calc(100%-28px),transparent)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="group" aria-label="Vehicle profile">
+              {VEHICLE_PROFILES.map(vehicle => (
+                <button
+                  key={vehicle.id}
+                  type="button"
+                  aria-pressed={vehicleProfile === vehicle.id}
+                  onClick={() => setVehicleProfile(vehicle.id)}
+                  className={cn(
+                    'min-h-[76px] w-[150px] shrink-0 rounded-[1.35rem] px-3 py-3 text-left transition-all duration-200 active:scale-[0.98]',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400',
+                    vehicleProfile === vehicle.id
+                      ? 'bg-blue-400/20 text-blue-50 ring-1 ring-blue-300/45 shadow-card'
+                      : 'bg-ink-100 text-fog-300 hover:bg-ink-200',
+                  )}
+                >
+                  <span className="block text-sm font-semibold leading-5">{vehicle.label}</span>
+                  <span className={cn('mt-1 block text-[11px] font-medium leading-4', vehicleProfile === vehicle.id ? 'text-blue-100/65' : 'text-fog-600')}>
+                    {vehicle.hint}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </section>
         )}
 
-        {/* Work trip */}
-        <div className="flex items-center justify-between py-1">
-          <div>
-            <p className="text-sm font-medium text-fog-200">Work trip</p>
-            <p className="text-xs text-fog-600 mt-0.5">Adds laptop, business documents</p>
-          </div>
-          <OneUIToggle
+        <section className="rounded-[1.65rem] bg-ink-100 px-4">
+          {transport === 'plane' && (
+            <ToggleRow
+              title="Carry-on only"
+              subtitle="Keep liquids under 100ml and pack compact."
+              icon={<Luggage size={17} aria-hidden="true" />}
+              checked={carryOnOnly}
+              onChange={setCarryOnOnly}
+            />
+          )}
+          <ToggleRow
+            title="Work trip"
+            subtitle="Adds laptop, chargers, and business documents."
+            icon={<BriefcaseBusiness size={17} aria-hidden="true" />}
             checked={isWork}
             onChange={setIsWork}
-            aria-label="Work trip"
+            separated={transport === 'plane'}
           />
-        </div>
+        </section>
 
-        {/* Destinations */}
         <DestinationInput destinations={destinations} onChange={setDestinations} />
 
         {error && (
-          <p role="alert" className="text-sm text-red-400 bg-red-400/10 rounded-oneui-sm px-3 py-2">
+          <p role="alert" className="rounded-oneui-sm bg-red-400/10 px-3 py-2 text-sm text-red-400">
             {error}
           </p>
         )}
@@ -188,11 +243,42 @@ export default function NewTripPage() {
           size="lg"
           loading={loading}
           disabled={!valid}
-          className="w-full"
+          className="w-full disabled:bg-ink-200/80 disabled:text-fog-500"
         >
-          {loading ? 'Creating trip…' : 'Create trip'}
+          {loading ? 'Creating trip...' : 'Create trip'}
         </OneUIButton>
       </form>
     </>
+  );
+}
+
+function ToggleRow({
+  title,
+  subtitle,
+  icon,
+  checked,
+  onChange,
+  separated,
+}: {
+  title: string;
+  subtitle: string;
+  icon: React.ReactNode;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  separated?: boolean;
+}) {
+  return (
+    <div className={cn('flex min-h-[70px] items-center justify-between gap-4 py-3', separated && 'border-t border-white/[0.06]')}>
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-400/[0.12] text-blue-300">
+          {icon}
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-fog-100">{title}</p>
+          <p className="mt-0.5 text-xs leading-4 text-fog-600">{subtitle}</p>
+        </div>
+      </div>
+      <OneUIToggle checked={checked} onChange={onChange} aria-label={title} />
+    </div>
   );
 }

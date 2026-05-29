@@ -115,8 +115,8 @@ const config: Config = {
           '100%': { backgroundPosition: '200% 0' },
         },
         'page-enter': {
-          from: { opacity: '0', transform: 'translateY(8px)' },
-          to:   { opacity: '1', transform: 'none' },
+          from: { opacity: '0', transform: 'translateY(10px) scale(0.992)' },
+          to:   { opacity: '1', transform: 'translateY(0) scale(1)' },
         },
       },
       animation: {
@@ -126,7 +126,7 @@ const config: Config = {
         'scale-in':    'scale-in 0.18s cubic-bezier(0.22, 1, 0.36, 1)',
         'oneui-pop':   'oneui-pop 180ms cubic-bezier(0.22, 1, 0.36, 1)',
         'oneui-fade':  'oneui-fade 220ms ease-out',
-        'page-enter':  'page-enter 0.22s cubic-bezier(0.22, 1, 0.36, 1)',
+        'page-enter':  'page-enter 0.32s cubic-bezier(0.22, 1, 0.36, 1)',
         shimmer:       'shimmer 1.8s ease-in-out infinite',
       },
       backgroundImage: {

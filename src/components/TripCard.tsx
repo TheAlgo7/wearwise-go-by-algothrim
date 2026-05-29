@@ -3,6 +3,7 @@ import { Plane, Car, Train, Bus, MapPin, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import type { Trip } from '@/types';
 import { TRANSPORT_LABELS } from '@/lib/constants';
+import { getVehicleProfileInfo } from '@/lib/vehicles';
 
 const TRANSPORT_ICONS = {
   plane: Plane,
@@ -19,6 +20,7 @@ interface TripCardProps {
 
 export function TripCard({ trip, packedCount, totalCount }: TripCardProps) {
   const TransportIcon = TRANSPORT_ICONS[trip.transport];
+  const vehicleInfo   = trip.transport === 'car' ? getVehicleProfileInfo(trip.vehicle_profile) : undefined;
   const progress  = totalCount > 0 ? (packedCount / totalCount) * 100 : 0;
   const allPacked = totalCount > 0 && packedCount === totalCount;
 
@@ -54,7 +56,7 @@ export function TripCard({ trip, packedCount, totalCount }: TripCardProps) {
 
           <div className="flex items-center justify-between mt-1">
             <span className="text-xs text-fog-500">
-              {TRANSPORT_LABELS[trip.transport]}
+              {vehicleInfo?.shortLabel ?? TRANSPORT_LABELS[trip.transport]}
               {trip.carry_on_only ? ' · carry-on only' : ''}
             </span>
             <span className={cn('text-xs font-medium', daysUntil <= 3 ? 'text-amber-400' : 'text-fog-500')}>

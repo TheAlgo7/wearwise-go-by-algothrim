@@ -9,6 +9,7 @@ export interface Database {
           name:          string;
           departure:     string;
           transport:     string;
+          vehicle_profile: string | null;
           destinations:  Json;
           carry_on_only: boolean;
           is_work:       boolean;

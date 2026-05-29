@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
@@ -28,10 +29,10 @@ export function OneUISheet({ open, onClose, title, children, className }: OneUIS
     return () => { document.body.style.overflow = ''; };
   }, [open]);
 
-  if (!open) return null;
+  if (!open || typeof document === 'undefined') return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end" role="dialog" aria-modal="true" aria-label={title}>
+  return createPortal(
+    <div className="fixed inset-0 z-[70] flex flex-col justify-end" role="dialog" aria-modal="true" aria-label={title}>
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-ink-0/70 backdrop-blur-sm animate-fade-in"
@@ -66,6 +67,7 @@ export function OneUISheet({ open, onClose, title, children, className }: OneUIS
 
         <div className="p-5">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

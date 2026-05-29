@@ -35,6 +35,17 @@ create table if not exists trips (
   name          text not null,
   departure     date not null,
   transport     text not null check (transport in ('plane','car','train','bus')),
+  vehicle_profile text check (
+    vehicle_profile is null or vehicle_profile in (
+      'curvv',
+      'virtus_gt',
+      'thar_roxx',
+      'fortuner_legender',
+      'alto_k10',
+      'venue',
+      'friends_car'
+    )
+  ),
   destinations  jsonb not null default '[]',
   carry_on_only boolean not null default false,
   is_work       boolean not null default false,

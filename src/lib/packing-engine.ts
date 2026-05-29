@@ -9,6 +9,7 @@ import type {
   PackingPriority,
   Destination,
 } from '@/types';
+import { getVehicleProfileInfo } from './vehicles';
 import {
   OUTFIT_BUFFER,
   UNDERWEAR_BUFFER,
@@ -68,6 +69,7 @@ export function buildPackingList(input: EngineInput): Omit<GeneratedPackingList,
   const carryOnOnly    = trip.carry_on_only;
   const isWork         = trip.is_work ?? false;
   const isMultiDest    = trip.destinations.length > 1;
+  const vehicleInfo    = isCar ? getVehicleProfileInfo(trip.vehicle_profile) : undefined;
 
   const destAnalysis   = analyzeDestinations(trip.destinations, weather);
   const coldestDest    = destAnalysis.reduce((a, b) => a.tempC < b.tempC ? a : b);
@@ -75,13 +77,18 @@ export function buildPackingList(input: EngineInput): Omit<GeneratedPackingList,
 
   const situations     = trip.destinations
     .flatMap(d => d.situation ? [d.situation] : [])
+    .map(s => s.toLowerCase())
     .filter((s, i, a) => a.indexOf(s) === i);
 
-  const hasBeach    = situations.some(s => ['beach', 'resort'].includes(s));
-  const hasMountain = situations.some(s => s === 'mountain');
-  const hasBusiness = situations.some(s => s === 'business') || isWork;
-  const hasCold     = situations.some(s => s === 'cold') || coldestDest.isCold;
-  const hasSunny    = hasBeach || hasMountain || hottestDest.isHot;
+  const hasAny = (tags: string[]) => situations.some(s => tags.includes(s));
+
+  const hasBeach    = hasAny(['beach', 'resort', 'island', 'backwater', 'coastal', 'tropical', 'cruise']);
+  const hasMountain = hasAny(['mountain', 'snow', 'cold', 'valley', 'hillstation', 'adventure', 'trekking', 'camping', 'border']);
+  const hasBusiness = hasAny(['business', 'workation']) || isWork;
+  const hasCold     = hasAny(['cold', 'snow']) || coldestDest.isCold;
+  const hasSunny    = hasBeach || hasMountain || hasAny(['desert', 'royal', 'fort']) || hottestDest.isHot;
+  const hasNature   = hasAny(['forest', 'wildlife', 'river', 'waterfall', 'lake', 'village', 'farmstay', 'monsoon']);
+  const hasWellness = hasAny(['wellness', 'ayurveda']);
 
   const wardrobeClothing = travelItems.filter(i => i.is_clothing);
 
@@ -109,6 +116,9 @@ export function buildPackingList(input: EngineInput): Omit<GeneratedPackingList,
   }
   if (hasSunny || hasMountain) {
     crit('Sunglasses', 'misc', 1, false, hasMountain ? 'Snow glare is intense' : undefined);
+  }
+  if (hasNature) {
+    crit('Mosquito repellent', 'misc', 1, false, 'Useful for forest, lake, farmstay, and monsoon stops');
   }
   if (isPlane) {
     crit('Boarding pass / e-ticket', 'documents', 1, false, 'Screenshot offline or print');
@@ -304,6 +314,15 @@ export function buildPackingList(input: EngineInput): Omit<GeneratedPackingList,
   if (isCar) {
     misc.push(makeItem(trip.id, 'Snacks for the road',    'misc', 1, false));
     misc.push(makeItem(trip.id, 'Aux cable / phone mount', 'misc', 1, false));
+    if (vehicleInfo) {
+      misc.push(makeItem(trip.id, `${vehicleInfo.shortLabel} road setup`, 'misc', 1, false, vehicleInfo.packingNote));
+    }
+    if (trip.vehicle_profile === 'alto_k10' || trip.vehicle_profile === 'friends_car') {
+      misc.push(makeItem(trip.id, 'Compact personal day bag', 'misc', 1, false, 'Keep essentials with you if boot or cabin space is limited'));
+    }
+    if (trip.vehicle_profile === 'thar_roxx' || trip.vehicle_profile === 'fortuner_legender') {
+      misc.push(makeItem(trip.id, 'Motion comfort kit', 'misc', 1, false, 'Useful on rough roads or bouncy low-speed sections'));
+    }
   }
   if (isTrain) {
     misc.push(makeItem(trip.id, 'Travel pillow / neck pillow',             'misc', 1, false));
@@ -315,6 +334,12 @@ export function buildPackingList(input: EngineInput): Omit<GeneratedPackingList,
   if (hasMountain || hasCold) {
     misc.push(makeItem(trip.id, 'Lip balm',    'misc', 1, false, 'Cold air dries lips fast'));
     misc.push(makeItem(trip.id, 'Sunscreen',   'misc', 1, false, 'UV reflection in snow/altitude'));
+  }
+  if (hasNature) {
+    misc.push(makeItem(trip.id, 'Light rain jacket / poncho', 'misc', 1, false, 'Weather can flip fast outdoors'));
+  }
+  if (hasWellness) {
+    clothing.push(makeItem(trip.id, 'Loose comfortable clothes', 'clothing', 1, true, 'Better for wellness or ayurveda stays'));
   }
 
   return {

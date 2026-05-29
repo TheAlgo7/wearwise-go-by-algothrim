@@ -1,5 +1,6 @@
 import type { Trip, DestinationWeather, GeneratedPackingList } from '@/types';
 import { TRANSPORT_LABELS, URGENCY_DAYS } from './constants';
+import { getVehicleProfileInfo } from './vehicles';
 
 export function buildPackingPrompt(
   trip: Trip,
@@ -8,6 +9,7 @@ export function buildPackingPrompt(
 ): string {
   const totalNights  = trip.destinations.reduce((sum, d) => sum + d.nights, 0);
   const isPlane      = trip.transport === 'plane';
+  const vehicleInfo  = trip.transport === 'car' ? getVehicleProfileInfo(trip.vehicle_profile) : undefined;
   const departure    = new Date(trip.departure + 'T00:00:00');
   const daysUntil    = Math.ceil((departure.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
   const isUrgent     = daysUntil <= URGENCY_DAYS;
@@ -36,7 +38,7 @@ Rules:
 
   const userPrompt = `Trip: ${trip.name}
 Departure: ${trip.departure}${isUrgent ? ' — URGENT, leaving very soon' : ''}
-Transport: ${TRANSPORT_LABELS[trip.transport]}${isPlane && trip.carry_on_only ? ' — carry-on only' : ''}
+Transport: ${TRANSPORT_LABELS[trip.transport]}${vehicleInfo ? ` (${vehicleInfo.label}: ${vehicleInfo.packingNote})` : ''}${isPlane && trip.carry_on_only ? ' — carry-on only' : ''}
 Work trip: ${trip.is_work ? 'Yes' : 'No'}
 Itinerary: ${destinationSummary}
 Total: ${totalNights} night${totalNights !== 1 ? 's' : ''}
