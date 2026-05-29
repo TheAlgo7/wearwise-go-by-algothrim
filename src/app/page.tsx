@@ -78,7 +78,7 @@ export default async function HomePage() {
                   <h2 id="upcoming-heading" className="text-[12px] leading-[17px] text-blue-300 font-semibold tracking-widest uppercase">
                     Upcoming
                   </h2>
-                  <p className="text-[11px] font-semibold text-blue-100/45">
+                  <p className="text-[11px] font-semibold text-fog-500">
                     {upcoming.length} trip{upcoming.length !== 1 ? 's' : ''}
                   </p>
                 </div>

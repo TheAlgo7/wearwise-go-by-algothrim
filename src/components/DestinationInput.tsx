@@ -120,7 +120,7 @@ export function DestinationInput({ destinations, onChange }: DestinationInputPro
               <div className="flex items-end justify-between gap-3">
                 <div>
                   <p className="text-xs font-medium text-fog-500">Primary vibe</p>
-                  <p className="mt-0.5 text-[11px] leading-4 text-fog-700">Pick what changes packing most.</p>
+                  <p className="mt-0.5 text-[11px] leading-4 text-fog-500">Shapes what the engine adds to your kit.</p>
                 </div>
                 {dest.situation && (
                   <button
@@ -141,7 +141,7 @@ export function DestinationInput({ destinations, onChange }: DestinationInputPro
                     aria-pressed={dest.situation === sit}
                     onClick={() => selectVibe(i, dest.situation === sit ? undefined : sit)}
                     className={cn(
-                      'flex min-h-[38px] items-center rounded-full px-3 text-xs font-medium transition-all duration-200 active:scale-[0.97]',
+                      'flex min-h-[44px] items-center rounded-full px-3 text-xs font-medium transition-all duration-200 active:scale-[0.97]',
                       dest.situation === sit
                         ? 'bg-blue-400/20 text-blue-100 ring-1 ring-blue-300/45'
                         : 'bg-ink-300 text-fog-500 hover:bg-ink-400 hover:text-fog-200',
@@ -156,7 +156,7 @@ export function DestinationInput({ destinations, onChange }: DestinationInputPro
                     type="button"
                     aria-pressed="true"
                     onClick={() => setSheetIndex(i)}
-                    className="flex min-h-[38px] items-center rounded-full bg-blue-400/20 px-3 text-xs font-medium text-blue-100 ring-1 ring-blue-300/45 transition-all duration-200 active:scale-[0.97]"
+                    className="flex min-h-[44px] items-center rounded-full bg-blue-400/20 px-3 text-xs font-medium text-blue-100 ring-1 ring-blue-300/45 transition-all duration-200 active:scale-[0.97]"
                   >
                     {labelFor(dest.situation)}
                   </button>
@@ -165,7 +165,7 @@ export function DestinationInput({ destinations, onChange }: DestinationInputPro
                 <button
                   type="button"
                   onClick={() => setSheetIndex(i)}
-                  className="flex min-h-[38px] items-center rounded-full bg-ink-300 px-3 text-xs font-semibold text-blue-300 transition-all duration-200 hover:bg-ink-400 active:scale-[0.97]"
+                  className="flex min-h-[44px] items-center rounded-full bg-ink-300 px-3 text-xs font-semibold text-blue-300 transition-all duration-200 hover:bg-ink-400 active:scale-[0.97]"
                 >
                   More
                 </button>
@@ -205,7 +205,7 @@ export function DestinationInput({ destinations, onChange }: DestinationInputPro
                       aria-pressed={sheetDestination.situation === sit}
                       onClick={() => sheetIndex !== null && selectVibe(sheetIndex, sheetDestination.situation === sit ? undefined : sit)}
                       className={cn(
-                        'min-h-[40px] rounded-full px-3 text-xs font-medium transition-all duration-200 active:scale-[0.97]',
+                        'min-h-[44px] rounded-full px-3 text-xs font-medium transition-all duration-200 active:scale-[0.97]',
                         sheetDestination.situation === sit
                           ? 'bg-blue-400/20 text-blue-100 ring-1 ring-blue-300/45'
                           : 'bg-ink-300 text-fog-500 hover:bg-ink-400 hover:text-fog-200',

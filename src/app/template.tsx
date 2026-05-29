@@ -13,10 +13,7 @@ export default function Template({ children }: { children: ReactNode }) {
     <div
       key={pathname}
       className="min-h-dvh"
-      style={{
-        animation: 'page-enter 320ms cubic-bezier(0.22, 1, 0.36, 1) both',
-        willChange: 'opacity, transform',
-      }}
+      style={{ animation: 'page-enter 320ms cubic-bezier(0.22, 1, 0.36, 1) both' }}
     >
       {children}
     </div>

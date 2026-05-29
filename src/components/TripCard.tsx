@@ -36,7 +36,7 @@ export function TripCard({ trip, packedCount, totalCount }: TripCardProps) {
         'hover:bg-ink-300 active:scale-[0.98]',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400',
       )}
-      aria-label={`${trip.name}, departing in ${daysUntil} days`}
+      aria-label={`${trip.name}, ${daysUntil === 0 ? 'departing today' : daysUntil < 0 ? 'departed' : `departing in ${daysUntil} days`}`}
     >
       <div className="flex items-start gap-3">
         <div className="w-11 h-11 rounded-full bg-blue-400/[0.12] flex items-center justify-center shrink-0">

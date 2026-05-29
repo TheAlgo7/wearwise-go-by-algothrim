@@ -58,7 +58,7 @@ export function OneUISheet({ open, onClose, title, children, className }: OneUIS
             <button
               onClick={onClose}
               aria-label="Close sheet"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-blue-300/45 text-blue-100 transition-colors hover:bg-blue-400/10"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-blue-300/45 text-blue-100 transition-colors hover:bg-blue-400/10"
             >
               <X size={18} strokeWidth={2.1} />
             </button>

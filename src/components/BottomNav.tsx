@@ -56,11 +56,8 @@ export function BottomNav() {
                 className={cn(
                   'relative flex items-center justify-center h-11 rounded-full px-3.5 min-w-[48px]',
                   'transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400',
-                  active ? 'text-blue-50' : 'text-white/40 hover:text-white/70',
+                  active ? 'bg-blue-400/[22%] text-blue-50' : 'text-white/40 hover:text-white/70',
                 )}
-                style={active ? {
-                  background: 'rgba(107,159,237,0.22)',
-                } : undefined}
               >
                 <Icon size={20} strokeWidth={active ? 2.1 : 1.7} aria-hidden className="flex-shrink-0" />
                 <span

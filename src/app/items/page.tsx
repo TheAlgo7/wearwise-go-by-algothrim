@@ -70,7 +70,7 @@ export default async function ItemsPage() {
                 >
                   <Icon size={14} aria-hidden="true" />
                   {CATEGORY_LABELS[cat]}
-                  <span className="font-normal normal-case text-fog-700">({catItems.length})</span>
+                  <span className="font-normal normal-case tabular-nums text-fog-500">({catItems.length})</span>
                 </h2>
 
                 <ul className="space-y-2" role="list">
@@ -100,7 +100,7 @@ function ItemRow({ item }: { item: TravelItem }) {
           {display.image ? (
             <Image
               src={display.image}
-              alt=""
+              alt={item.name}
               width={104}
               height={104}
               className="h-full w-full object-cover"
@@ -140,7 +140,7 @@ function ItemRow({ item }: { item: TravelItem }) {
             </p>
           )}
           {display.detail && (
-            <p className="mt-0.5 line-clamp-1 text-[11px] leading-4 text-fog-700">
+            <p className="mt-0.5 line-clamp-1 text-[11px] leading-4 text-fog-500">
               {display.detail}
             </p>
           )}

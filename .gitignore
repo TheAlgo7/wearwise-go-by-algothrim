@@ -41,5 +41,8 @@ codex-devserver*.log
 *.tsbuildinfo
 next-env.d.ts
 
+# product images (served from Supabase storage, not committed to git)
+/public/products/
+
 .vercel
 .env*.local
