@@ -1,14 +1,15 @@
+'use client';
+
+import { useCallback, useEffect, useState } from 'react';
 import { FileText, Luggage, PackageOpen, Plug, Shirt, Sparkles } from 'lucide-react';
 import type { ElementType } from 'react';
 import Image from 'next/image';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/client';
 import { OneUIHeader } from '@/components/oneui';
 import { AddTravelItem } from '@/components/AddTravelItem';
 import { CATEGORY_LABELS, CATEGORY_ORDER } from '@/lib/constants';
 import { getItemDisplay } from '@/lib/item-display';
 import type { TravelItem, PackingCategory } from '@/types';
-
-export const dynamic = 'force-dynamic';
 
 type NormalCategory = Exclude<(typeof CATEGORY_ORDER)[number], 'critical'>;
 
@@ -20,21 +21,27 @@ const CATEGORY_ICONS: Record<NormalCategory, ElementType> = {
   misc: Luggage,
 };
 
-export default async function ItemsPage() {
-  const supabase = await createClient();
+export default function ItemsPage() {
+  // null = loading (renders skeletons); [] = loaded, empty.
+  const [items, setItems] = useState<TravelItem[] | null>(null);
 
-  const { data, error } = await supabase
-    .from('travel_items')
-    .select('*')
-    .order('name');
+  const load = useCallback(async () => {
+    const supabase = createClient();
+    const { data, error } = await supabase.from('travel_items').select('*').order('name');
+    setItems(error ? [] : ((data ?? []) as TravelItem[]));
+  }, []);
 
-  const items = (error ? [] : (data ?? [])) as TravelItem[];
+  // load() sets state only after an awaited fetch (not synchronous) — same pattern as /trips/[id].
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { load(); }, [load]);
 
+  const loading = items === null;
+  const list = items ?? [];
   const normalCategories = CATEGORY_ORDER.filter((c): c is NormalCategory => c !== 'critical');
 
   const byCategory = normalCategories.reduce<Record<PackingCategory, TravelItem[]>>(
     (acc, cat) => {
-      acc[cat] = items.filter((i) => i.category === cat);
+      acc[cat] = list.filter((i) => i.category === cat);
       return acc;
     },
     { clothing: [], grooming: [], electronics: [], documents: [], misc: [] },
@@ -44,12 +51,14 @@ export default async function ItemsPage() {
     <>
       <OneUIHeader
         title="Travel items"
-        subtitle={`${items.length} item${items.length !== 1 ? 's' : ''} in your kit`}
-        right={<AddTravelItem />}
+        subtitle={loading ? 'Your kit' : `${list.length} item${list.length !== 1 ? 's' : ''} in your kit`}
+        right={<AddTravelItem onAdded={load} />}
       />
 
       <div className="px-4 pt-3 pb-8 space-y-6">
-        {items.length === 0 ? (
+        {loading ? (
+          <ItemsSkeleton />
+        ) : list.length === 0 ? (
           <div className="rounded-[2rem] border border-white/[0.07] bg-ink-200 px-5 py-8 text-center shadow-card">
             <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-blue-400/[0.12] flex items-center justify-center">
               <PackageOpen size={28} className="text-blue-300" aria-hidden="true" />
@@ -60,7 +69,7 @@ export default async function ItemsPage() {
               WearWise Go reuses them to build every packing list.
             </p>
             <div className="mx-auto max-w-[220px]">
-              <AddTravelItem variant="cta" />
+              <AddTravelItem variant="cta" onAdded={load} />
             </div>
           </div>
         ) : (
@@ -91,6 +100,23 @@ export default async function ItemsPage() {
         )}
       </div>
     </>
+  );
+}
+
+function ItemsSkeleton() {
+  return (
+    <div className="space-y-6" aria-hidden="true">
+      {[0, 1].map((s) => (
+        <section key={s}>
+          <div className="mb-2.5 h-3 w-24 rounded-full bg-ink-300" />
+          <ul className="space-y-2">
+            {[0, 1, 2].map((i) => (
+              <li key={i} className="skeleton h-[72px] rounded-[1.35rem]" />
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
   );
 }
 

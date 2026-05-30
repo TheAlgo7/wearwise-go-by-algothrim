@@ -18,9 +18,11 @@ const LAYER_LABELS: Record<ClothingLayer, string> = {
 interface Props {
   /** 'header' = compact pill for the page header; 'cta' = full-width button for empty state. */
   variant?: 'header' | 'cta';
+  /** Called after a successful insert so a client-rendered list can refetch. */
+  onAdded?: () => void;
 }
 
-export function AddTravelItem({ variant = 'header' }: Props) {
+export function AddTravelItem({ variant = 'header', onAdded }: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -68,6 +70,7 @@ export function AddTravelItem({ variant = 'header' }: Props) {
       const { error: insertError } = await supabase.from('travel_items').insert(insert);
       if (insertError) throw new Error(insertError.message);
       setOpen(false);
+      onAdded?.();
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not save item');

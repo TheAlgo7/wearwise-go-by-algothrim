@@ -1,9 +1,10 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import { CalendarDays, CheckCircle2, Luggage, Sparkles } from 'lucide-react';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/client';
 import { TripCard } from '@/components/TripCard';
 import type { Trip } from '@/types';
-
-export const dynamic = 'force-dynamic';
 
 interface TripWithProgress {
   trip: Trip;
@@ -11,38 +12,49 @@ interface TripWithProgress {
   totalCount: number;
 }
 
-async function getTripsWithProgress(): Promise<TripWithProgress[]> {
-  const supabase = await createClient();
+export default function HomePage() {
+  // null = still loading (renders skeletons); [] = loaded, empty.
+  const [trips, setTrips] = useState<TripWithProgress[] | null>(null);
 
-  const [{ data: trips, error }, { data: lists }] = await Promise.all([
-    supabase.from('trips').select('*').order('departure', { ascending: true }),
-    supabase.from('packing_lists').select('trip_id, packed'),
-  ]);
+  useEffect(() => {
+    const supabase = createClient();
+    let active = true;
 
-  if (error || !trips) return [];
+    (async () => {
+      const [{ data: tripRows, error }, { data: lists }] = await Promise.all([
+        supabase.from('trips').select('*').order('departure', { ascending: true }),
+        supabase.from('packing_lists').select('trip_id, packed'),
+      ]);
+      if (!active) return;
 
-  const listsByTrip = (lists ?? []).reduce<Record<string, { packed: boolean }[]>>(
-    (acc, item) => {
-      if (!acc[item.trip_id]) acc[item.trip_id] = [];
-      acc[item.trip_id].push(item);
-      return acc;
-    },
-    {},
-  );
+      if (error || !tripRows) {
+        setTrips([]);
+        return;
+      }
 
-  return (trips as Trip[]).map((trip) => {
-    const items = listsByTrip[trip.id] ?? [];
-    const totalCount = items.length;
-    const packedCount = items.filter((i) => i.packed).length;
-    return { trip, packedCount, totalCount };
-  });
-}
+      const listsByTrip = (lists ?? []).reduce<Record<string, { packed: boolean }[]>>(
+        (acc, item) => {
+          (acc[item.trip_id] ??= []).push(item);
+          return acc;
+        },
+        {},
+      );
 
-export default async function HomePage() {
-  const trips = await getTripsWithProgress();
+      setTrips(
+        (tripRows as Trip[]).map((trip) => {
+          const items = listsByTrip[trip.id] ?? [];
+          return { trip, totalCount: items.length, packedCount: items.filter((i) => i.packed).length };
+        }),
+      );
+    })();
 
-  const upcoming = trips.filter((t) => new Date(t.trip.departure + 'T00:00:00') >= new Date());
-  const past = trips.filter((t) => new Date(t.trip.departure + 'T00:00:00') < new Date());
+    return () => { active = false; };
+  }, []);
+
+  const loading = trips === null;
+  const upcoming = (trips ?? []).filter((t) => new Date(t.trip.departure + 'T00:00:00') >= new Date());
+  const past = (trips ?? []).filter((t) => new Date(t.trip.departure + 'T00:00:00') < new Date());
+
   const today = new Date().toLocaleDateString('en-IN', {
     weekday: 'long',
     day: 'numeric',
@@ -53,7 +65,7 @@ export default async function HomePage() {
     <main className="min-h-dvh">
       <div className="px-5 pt-12 pb-4">
         <div className="mb-2 min-w-0">
-          <p className="truncate text-[12px] font-semibold uppercase leading-[17px] tracking-widest text-blue-300">
+          <p suppressHydrationWarning className="truncate text-[12px] font-semibold uppercase leading-[17px] tracking-widest text-blue-300">
             {today} · Travel kit
           </p>
         </div>
@@ -68,7 +80,9 @@ export default async function HomePage() {
       </div>
 
       <div className="flex flex-col gap-4 px-4 pb-2">
-        {upcoming.length === 0 && past.length === 0 ? (
+        {loading ? (
+          <TripListSkeleton />
+        ) : upcoming.length === 0 && past.length === 0 ? (
           <EmptyState />
         ) : (
           <>
@@ -110,6 +124,19 @@ export default async function HomePage() {
         )}
       </div>
     </main>
+  );
+}
+
+function TripListSkeleton() {
+  return (
+    <section className="pt-1" aria-hidden="true">
+      <div className="mb-2 h-3 w-20 rounded-full bg-ink-300 px-1" />
+      <ul className="space-y-3">
+        {[0, 1, 2].map((i) => (
+          <li key={i} className="skeleton h-[104px] rounded-[1.65rem]" />
+        ))}
+      </ul>
+    </section>
   );
 }
 
