@@ -1,5 +1,8 @@
--- WearWise Go — Sprint 2 migration
--- Run in Supabase SQL editor AFTER schema.sql
+-- WearWise Go — Sprint 2 migration  (HISTORICAL — see supabase/README.md)
+--
+-- Every column below is already part of schema.sql. This file exists only to
+-- upgrade a database created before these columns existed. Fresh installs:
+-- run schema.sql, NOT this file.
 
 -- Priority and destination label on packing list items
 ALTER TABLE packing_lists

@@ -1,5 +1,6 @@
--- WearWise Go — Supabase schema
--- Run in Supabase SQL editor
+-- WearWise Go — Supabase schema (CANONICAL — run this for a fresh install)
+-- Run in Supabase SQL editor, then seed.sql. See supabase/README.md.
+-- The migration-*.sql files are historical and not needed for new projects.
 
 -- ─── Extensions ──────────────────────────────────────────────────────────────
 create extension if not exists "uuid-ossp";

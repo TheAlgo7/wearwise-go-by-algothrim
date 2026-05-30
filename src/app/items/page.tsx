@@ -3,6 +3,7 @@ import type { ElementType } from 'react';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/server';
 import { OneUIHeader } from '@/components/oneui';
+import { AddTravelItem } from '@/components/AddTravelItem';
 import { CATEGORY_LABELS, CATEGORY_ORDER } from '@/lib/constants';
 import { getItemDisplay } from '@/lib/item-display';
 import type { TravelItem, PackingCategory } from '@/types';
@@ -44,6 +45,7 @@ export default async function ItemsPage() {
       <OneUIHeader
         title="Travel items"
         subtitle={`${items.length} item${items.length !== 1 ? 's' : ''} in your kit`}
+        right={<AddTravelItem />}
       />
 
       <div className="px-4 pt-3 pb-8 space-y-6">
@@ -52,9 +54,14 @@ export default async function ItemsPage() {
             <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-blue-400/[0.12] flex items-center justify-center">
               <PackageOpen size={28} className="text-blue-300" aria-hidden="true" />
             </div>
-            <p className="text-sm text-fog-400 max-w-[240px] mx-auto leading-relaxed">
-              Run the seed SQL in Supabase to populate your default travel kit.
+            <p className="mb-1 text-[17px] font-semibold text-fog-100">Your kit is empty</p>
+            <p className="mx-auto mb-5 max-w-[260px] text-sm leading-relaxed text-fog-400">
+              Add the things you travel with — clothes, grooming, electronics, documents.
+              WearWise Go reuses them to build every packing list.
             </p>
+            <div className="mx-auto max-w-[220px]">
+              <AddTravelItem variant="cta" />
+            </div>
           </div>
         ) : (
           normalCategories.map((cat) => {

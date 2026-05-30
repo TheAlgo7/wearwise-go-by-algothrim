@@ -233,26 +233,19 @@ export function buildPackingList(input: EngineInput): Omit<GeneratedPackingList,
   }
 
   // ── Grooming ─────────────────────────────────────────────────────────────
+  // Liquid advisories are size-aware: only actual liquids are annotated, and only
+  // bottles over the cabin limit get the "decant or check a bag" flag (BUG: previously
+  // every grooming item — even the toothbrush — was stamped "max 100ml").
   const groomingItems = travelItems.filter(i => i.category === 'grooming' && !i.is_clothing);
-  let grooming: PackingItem[] = groomingItems
+  const grooming: PackingItem[] = groomingItems
     .filter(i => !critical.some(c => c.name.toLowerCase().includes(i.name.toLowerCase())))
-    .map(i => makeItem(trip.id, i.name, 'grooming', 1, false));
+    .map(i => makeItem(trip.id, i.name, 'grooming', 1, false, liquidNote(i, isPlane, carryOnOnly)));
 
   // Train overnight hygiene extras
   if (isTrain && totalNights >= 1) {
     grooming.push(makeItem(trip.id, 'Face wipes',       'grooming', 1, false, 'For the journey'));
     grooming.push(makeItem(trip.id, 'Hand sanitiser',   'grooming', 1, false));
     grooming.push(makeItem(trip.id, 'Travel towel',     'grooming', 1, false, 'For overnight comfort'));
-  }
-
-  // Plane liquid limits
-  if (isPlane) {
-    grooming = grooming.map(item => ({
-      ...item,
-      notes: item.notes
-        ? `${item.notes} — max ${PLANE_LIQUID_ML_LIMIT}ml`
-        : `max ${PLANE_LIQUID_ML_LIMIT}ml (carry-on)`,
-    }));
   }
 
   // ── Electronics ───────────────────────────────────────────────────────────
@@ -353,6 +346,35 @@ export function buildPackingList(input: EngineInput): Omit<GeneratedPackingList,
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/**
+ * Carry-on liquid advisory for a grooming item, derived from its real `size_ml`
+ * (falling back to a `liquid` tag when volume is unknown).
+ *
+ * - Solids (toothbrush, razor, comb) get no note.
+ * - Only flights are annotated; only carry-on enforces the cabin limit.
+ * - A bottle over the limit is flagged to decant or check a bag.
+ */
+function liquidNote(item: TravelItem, isPlane: boolean, carryOnOnly: boolean): string | undefined {
+  if (!isPlane) return undefined;
+
+  const ml = item.size_ml ?? null;
+  const isLiquid = ml != null || item.tags.some(t => t.toLowerCase() === 'liquid');
+  if (!isLiquid) return undefined;
+
+  const limit = PLANE_LIQUID_ML_LIMIT;
+
+  if (ml != null && ml > limit) {
+    return carryOnOnly
+      ? `${ml}ml · over ${limit}ml — decant or check a bag`
+      : `${ml}ml · checked bag only (over ${limit}ml cabin limit)`;
+  }
+  if (ml != null) {
+    return carryOnOnly ? `${ml}ml · carry-on ok` : undefined;
+  }
+  // Liquid of unknown volume.
+  return carryOnOnly ? `liquid · keep under ${limit}ml in carry-on` : undefined;
+}
 
 function makeItem(
   tripId: string,

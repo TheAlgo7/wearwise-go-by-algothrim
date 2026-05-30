@@ -1,3 +1,8 @@
+-- WearWise Go — vehicle_profile migration  (HISTORICAL — see supabase/README.md)
+--
+-- Already included in schema.sql. Kept only to upgrade a pre-existing database.
+-- Fresh installs: run schema.sql, NOT this file.
+
 alter table public.trips
   add column if not exists vehicle_profile text;
 

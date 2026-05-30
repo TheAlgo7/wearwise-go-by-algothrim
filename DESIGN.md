@@ -72,7 +72,9 @@ Soft copper (`#C8855A`) is used exclusively for the "Don't forget" critical sect
 
 Font stack: `SamsungOne`, `SamsungSharpSans`, `-apple-system`, `BlinkMacSystemFont`, `Segoe UI`, `sans-serif`.
 
-No custom type scale tokens in tailwind.config (unlike Wardrobe app). Sizes are set inline per component. Common patterns:
+The shared `text-oneui-*` type scale (hero / title / h / body / cap / tab) is defined in
+`tailwind.config.ts` — identical to WearWise Wardrobe, so the two apps share one typographic
+vocabulary. Many components still set sizes inline for fine control; common patterns:
 
 | Usage | Class |
 |---|---|
