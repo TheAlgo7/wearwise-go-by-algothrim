@@ -9,6 +9,8 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
+const DISMISS_KEY = 'ww-go-install-dismissed';
+
 export function InstallPrompt() {
   const [prompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [dismissed, setDismissed] = useState(false);
@@ -16,6 +18,7 @@ export function InstallPrompt() {
   useEffect(() => {
     const handler = (e: Event) => {
       e.preventDefault();
+      if (localStorage.getItem(DISMISS_KEY)) return;
       setPrompt(e as BeforeInstallPromptEvent);
     };
     window.addEventListener('beforeinstallprompt', handler);
@@ -24,11 +27,16 @@ export function InstallPrompt() {
 
   if (!prompt || dismissed) return null;
 
+  const dismiss = () => {
+    localStorage.setItem(DISMISS_KEY, '1');
+    setDismissed(true);
+  };
+
   const install = async () => {
     await prompt.prompt();
     const { outcome } = await prompt.userChoice;
     if (outcome === 'accepted') setPrompt(null);
-    else setDismissed(true);
+    else dismiss();
   };
 
   return (
@@ -43,7 +51,7 @@ export function InstallPrompt() {
       </p>
       <OneUIButton size="sm" onClick={install}>Install</OneUIButton>
       <button
-        onClick={() => setDismissed(true)}
+        onClick={dismiss}
         aria-label="Dismiss install prompt"
         className="p-1 text-fog-500 hover:text-fog-200 transition-colors"
       >

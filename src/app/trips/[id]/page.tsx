@@ -30,24 +30,36 @@ export default function TripDetailPage() {
 
   const loadTrip = useCallback(async () => {
     setLoading(true);
-    const { data: tripData } = await supabase
+    const { data: tripData, error: tripError } = await supabase
       .from('trips')
       .select('*')
       .eq('id', id)
       .single();
 
+    if (tripError && tripError.code !== 'PGRST116') {
+      // Network/transient failure — keep what we have and surface it, don't bounce home.
+      setError('Couldn’t load the trip. Check your connection and retry.');
+      setLoading(false);
+      return;
+    }
     if (!tripData) { router.replace('/'); return; }
     const t = tripData as unknown as Trip;
     setTrip(t);
     document.title = `${t.name} · WearWise Go`;
 
-    const { data: listData } = await supabase
+    const { data: listData, error: listError } = await supabase
       .from('packing_lists')
       .select('*')
       .eq('trip_id', id)
       .order('category');
 
-    setItems((listData ?? []) as PackingItem[]);
+    if (listError) {
+      // A failed read is not an empty list — keep existing items visible.
+      setError('Couldn’t refresh the packing list. Pull back in or retry.');
+    } else {
+      setError('');
+      setItems((listData ?? []) as PackingItem[]);
+    }
     setLoading(false);
   }, [id, supabase, router]);
 
@@ -211,7 +223,7 @@ export default function TripDetailPage() {
               <div key={w.city} className="shrink-0 bg-ink-100 rounded-oneui px-3 py-2 text-center min-w-[96px]">
                 <p className="text-xs text-fog-600 truncate">{w.city}</p>
                 <p className="text-lg font-semibold text-blue-400">{w.tempC}°C</p>
-                <p className="text-[10px] text-fog-500 capitalize truncate">{w.description}</p>
+                <p className="text-[11px] text-fog-500 capitalize truncate">{w.description}</p>
               </div>
             ))}
           </div>
@@ -247,9 +259,16 @@ export default function TripDetailPage() {
         </button>
 
         {error && (
-          <p role="alert" className="text-sm text-red-400 bg-red-400/10 rounded-oneui-sm px-3 py-2">
-            {error}
-          </p>
+          <div role="alert" className="flex items-center gap-3 rounded-oneui-sm bg-red-400/10 px-3 py-2">
+            <p className="flex-1 text-sm text-red-400">{error}</p>
+            <button
+              type="button"
+              onClick={loadTrip}
+              className="min-h-[44px] shrink-0 px-2 text-sm font-semibold text-red-300 transition-colors hover:text-red-200"
+            >
+              Retry
+            </button>
+          </div>
         )}
 
         {/* AI reasoning */}
@@ -270,7 +289,7 @@ export default function TripDetailPage() {
               )}
             </div>
             <div
-              className="h-1.5 bg-ink-300 rounded-full overflow-hidden"
+              className="h-2.5 bg-ink-300 rounded-full overflow-hidden"
               role="progressbar"
               aria-label="Packing progress"
               aria-valuenow={Math.round((packedCount / totalCount) * 100)}

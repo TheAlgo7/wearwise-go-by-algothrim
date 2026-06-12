@@ -335,14 +335,14 @@ export function buildPackingList(input: EngineInput): Omit<GeneratedPackingList,
     clothing.push(makeItem(trip.id, 'Loose comfortable clothes', 'clothing', 1, true, 'Better for wellness or ayurveda stays'));
   }
 
-  return {
+  return dedupeAcrossCategories({
     critical:    dedupeItems(critical),
     clothing:    dedupeItems([...clothing, ...situationalClothing]),
     grooming:    dedupeItems(grooming),
     electronics: dedupeItems(electronics),
     documents:   dedupeItems(documents),
     misc:        dedupeItems(misc),
-  };
+  });
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -398,6 +398,32 @@ function makeItem(
     notes,
     destination_label: destinationLabel,
   };
+}
+
+/**
+ * Drop duplicates that span categories (dedupeItems only sees one category at a
+ * time, so "Lip balm" could land in both grooming and misc). Earlier categories
+ * win. A later item is also dropped when an earlier item's name contains it in
+ * full — that catches a generic engine add ("Sunscreen" in misc) duplicating a
+ * specific kit item ("Sunscreen SPF50" in grooming) without merging genuinely
+ * distinct items like "Hiking socks" vs "Socks".
+ */
+function dedupeAcrossCategories(
+  list: Omit<GeneratedPackingList, 'reasoning'>,
+): Omit<GeneratedPackingList, 'reasoning'> {
+  const order = ['critical', 'clothing', 'grooming', 'electronics', 'documents', 'misc'] as const;
+  const seen: string[] = [];
+
+  const result = { ...list };
+  for (const cat of order) {
+    result[cat] = result[cat].filter(item => {
+      const name = item.name.toLowerCase().trim();
+      const dupe = seen.some(prev => prev === name || prev.includes(name));
+      if (!dupe) seen.push(name);
+      return !dupe;
+    });
+  }
+  return result;
 }
 
 function dedupeItems(items: PackingItem[]): PackingItem[] {

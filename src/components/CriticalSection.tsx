@@ -67,7 +67,7 @@ export function CriticalSection({ items, onToggle }: CriticalSectionProps) {
                   {item.quantity > 1 ? `${item.quantity}x ` : ''}{item.name}
                 </span>
                 {item.destination_label && (
-                  <span className="text-[10px] text-amber-400/70 font-medium uppercase tracking-wide mt-0.5 block">
+                  <span className="text-[11px] text-amber-400/70 font-medium uppercase tracking-wide mt-0.5 block">
                     {item.destination_label}
                   </span>
                 )}

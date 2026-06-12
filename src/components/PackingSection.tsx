@@ -87,7 +87,7 @@ export function PackingSection({ category, items, onToggle }: PackingSectionProp
                     {item.quantity > 1 ? `${item.quantity}x ` : ''}{item.name}
                   </span>
                   {item.destination_label && (
-                    <span className="text-[10px] text-blue-300/75 font-medium uppercase tracking-wide mt-0.5 block">
+                    <span className="text-[11px] text-blue-300/75 font-medium uppercase tracking-wide mt-0.5 block">
                       {item.destination_label}
                     </span>
                   )}

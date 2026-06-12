@@ -69,11 +69,11 @@ export function TripCard({ trip, packedCount, totalCount }: TripCardProps) {
       {totalCount > 0 && (
         <div className="mt-3">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] text-fog-600">{packedCount} / {totalCount} packed</span>
-            {allPacked && <span className="text-[10px] text-blue-300 font-medium">Ready</span>}
+            <span className="text-[11px] text-fog-600">{packedCount} / {totalCount} packed</span>
+            {allPacked && <span className="text-[11px] text-blue-300 font-medium">Ready</span>}
           </div>
           <div
-            className="h-1 bg-ink-300 rounded-full overflow-hidden"
+            className="h-2 bg-ink-300 rounded-full overflow-hidden"
             role="progressbar"
             aria-label="Packing progress"
             aria-valuenow={Math.round(progress)}

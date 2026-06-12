@@ -24,10 +24,12 @@ const CATEGORY_ICONS: Record<NormalCategory, ElementType> = {
 export default function ItemsPage() {
   // null = loading (renders skeletons); [] = loaded, empty.
   const [items, setItems] = useState<TravelItem[] | null>(null);
+  const [loadError, setLoadError] = useState(false);
 
   const load = useCallback(async () => {
     const supabase = createClient();
     const { data, error } = await supabase.from('travel_items').select('*').order('name');
+    setLoadError(Boolean(error));
     setItems(error ? [] : ((data ?? []) as TravelItem[]));
   }, []);
 
@@ -58,6 +60,22 @@ export default function ItemsPage() {
       <div className="px-4 pt-3 pb-8 space-y-6">
         {loading ? (
           <ItemsSkeleton />
+        ) : loadError ? (
+          <div role="alert" className="rounded-[1.65rem] bg-ink-100 px-4 py-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[15px] font-semibold leading-5 text-fog-100">Couldn&apos;t load your kit</p>
+                <p className="mt-1 text-[13px] leading-5 text-fog-500">Check your connection and try again.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setItems(null); load(); }}
+                className="min-h-[44px] shrink-0 rounded-full bg-blue-400/[0.14] px-5 text-[13px] font-semibold text-blue-200 transition-colors hover:bg-blue-400/[0.22]"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
         ) : list.length === 0 ? (
           <div className="rounded-[2rem] border border-white/[0.07] bg-ink-200 px-5 py-8 text-center shadow-card">
             <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-blue-400/[0.12] flex items-center justify-center">
@@ -180,7 +198,7 @@ function ItemRow({ item }: { item: TravelItem }) {
           {showTags && (
             <div className="mt-2 flex min-w-0 gap-1.5 overflow-hidden">
               {tags.map((tag) => (
-                <span key={tag} className="max-w-[7rem] truncate rounded-full bg-ink-300 px-2 py-1 text-[10px] font-medium leading-none text-fog-500">
+                <span key={tag} className="max-w-[7rem] truncate rounded-full bg-ink-300 px-2 py-1 text-[11px] font-medium leading-none text-fog-500">
                   {tag}
                 </span>
               ))}

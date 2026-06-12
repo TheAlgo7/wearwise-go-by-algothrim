@@ -15,6 +15,8 @@ interface TripWithProgress {
 export default function HomePage() {
   // null = still loading (renders skeletons); [] = loaded, empty.
   const [trips, setTrips] = useState<TripWithProgress[] | null>(null);
+  const [loadError, setLoadError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     const supabase = createClient();
@@ -28,9 +30,11 @@ export default function HomePage() {
       if (!active) return;
 
       if (error || !tripRows) {
+        setLoadError(true);
         setTrips([]);
         return;
       }
+      setLoadError(false);
 
       const listsByTrip = (lists ?? []).reduce<Record<string, { packed: boolean }[]>>(
         (acc, item) => {
@@ -49,7 +53,7 @@ export default function HomePage() {
     })();
 
     return () => { active = false; };
-  }, []);
+  }, [reloadKey]);
 
   const loading = trips === null;
   const upcoming = (trips ?? []).filter((t) => new Date(t.trip.departure + 'T00:00:00') >= new Date());
@@ -82,6 +86,8 @@ export default function HomePage() {
       <div className="flex flex-col gap-4 px-4 pb-2">
         {loading ? (
           <TripListSkeleton />
+        ) : loadError ? (
+          <LoadErrorState onRetry={() => { setTrips(null); setReloadKey((k) => k + 1); }} />
         ) : upcoming.length === 0 && past.length === 0 ? (
           <EmptyState />
         ) : (
@@ -136,6 +142,26 @@ function TripListSkeleton() {
           <li key={i} className="skeleton h-[104px] rounded-[1.65rem]" />
         ))}
       </ul>
+    </section>
+  );
+}
+
+function LoadErrorState({ onRetry }: { onRetry: () => void }) {
+  return (
+    <section role="alert" className="rounded-[1.65rem] bg-ink-100 px-4 py-4">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-[15px] font-semibold leading-5 text-fog-100">Couldn&apos;t load trips</h2>
+          <p className="mt-1 text-[13px] leading-5 text-fog-500">Check your connection and try again.</p>
+        </div>
+        <button
+          type="button"
+          onClick={onRetry}
+          className="min-h-[44px] shrink-0 rounded-full bg-blue-400/[0.14] px-5 text-[13px] font-semibold text-blue-200 transition-colors hover:bg-blue-400/[0.22]"
+        >
+          Retry
+        </button>
+      </div>
     </section>
   );
 }
