@@ -25,6 +25,8 @@ export interface Trip {
   destinations:  Destination[];
   carry_on_only: boolean;
   is_work:       boolean;
+  weather?:      DestinationWeather[] | null;  // last generated snapshot
+  packing_reasoning?: string | null;           // last AI review of the kit
   created_at:    string;
   updated_at:    string;
 }

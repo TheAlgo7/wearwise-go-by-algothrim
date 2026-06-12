@@ -45,6 +45,8 @@ export default function TripDetailPage() {
     if (!tripData) { router.replace('/'); return; }
     const t = tripData as unknown as Trip;
     setTrip(t);
+    setWeather(t.weather ?? []);
+    setReasoning(t.packing_reasoning ?? '');
     document.title = `${t.name} · WearWise Go`;
 
     const { data: listData, error: listError } = await supabase
@@ -89,7 +91,19 @@ export default function TripDetailPage() {
       const pData = await pRes.json();
       if (!pRes.ok) throw new Error(pData.error ?? 'Pack API failed');
 
-      setReasoning(pData.packingList.reasoning ?? '');
+      const newReasoning: string = pData.packingList.reasoning ?? '';
+      setReasoning(newReasoning);
+
+      // Persist so weather chips and AI review survive reloads. Best-effort —
+      // the kit itself is already saved server-side.
+      await supabase
+        .from('trips')
+        .update({
+          weather: weatherData as unknown as import('@/lib/supabase/types').Json,
+          packing_reasoning: newReasoning || null,
+        })
+        .eq('id', id);
+
       await loadTrip();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Generation failed');

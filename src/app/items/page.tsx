@@ -7,7 +7,9 @@ import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { OneUIHeader } from '@/components/oneui';
 import { AddTravelItem } from '@/components/AddTravelItem';
+import { TravelItemSheet } from '@/components/TravelItemSheet';
 import { CATEGORY_LABELS, CATEGORY_ORDER } from '@/lib/constants';
+import { cn } from '@/lib/cn';
 import { getItemDisplay } from '@/lib/item-display';
 import type { TravelItem, PackingCategory } from '@/types';
 
@@ -25,6 +27,7 @@ export default function ItemsPage() {
   // null = loading (renders skeletons); [] = loaded, empty.
   const [items, setItems] = useState<TravelItem[] | null>(null);
   const [loadError, setLoadError] = useState(false);
+  const [selected, setSelected] = useState<TravelItem | null>(null);
 
   const load = useCallback(async () => {
     const supabase = createClient();
@@ -109,7 +112,7 @@ export default function ItemsPage() {
 
                 <ul className="space-y-2" role="list">
                   {catItems.map((item) => (
-                    <ItemRow key={item.id} item={item} />
+                    <ItemRow key={item.id} item={item} onSelect={() => setSelected(item)} />
                   ))}
                 </ul>
               </section>
@@ -117,6 +120,12 @@ export default function ItemsPage() {
           })
         )}
       </div>
+
+      <TravelItemSheet
+        item={selected}
+        onClose={() => setSelected(null)}
+        onDeleted={load}
+      />
     </>
   );
 }
@@ -138,14 +147,25 @@ function ItemsSkeleton() {
   );
 }
 
-function ItemRow({ item }: { item: TravelItem }) {
+function ItemRow({ item, onSelect }: { item: TravelItem; onSelect: () => void }) {
   const display = getItemDisplay(item);
   const tags = item.tags.slice(0, 3);
   const showTags = !display.detail && tags.length > 0;
   const FallbackIcon = CATEGORY_ICONS[item.category as NormalCategory] ?? PackageOpen;
 
   return (
-    <li className="rounded-[1.35rem] border border-white/[0.055] bg-ink-200 px-3.5 py-2.5 shadow-card">
+    <li
+      role="button"
+      tabIndex={0}
+      onClick={onSelect}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(); } }}
+      aria-label={`${display.title}, view details`}
+      className={cn(
+        'cursor-pointer rounded-[1.35rem] border border-white/[0.055] bg-ink-200 px-3.5 py-2.5 shadow-card',
+        'transition-all duration-150 hover:bg-ink-300 active:scale-[0.98]',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400',
+      )}
+    >
       <div className="flex items-center gap-3">
         <div className="relative flex h-[52px] w-[52px] shrink-0 items-center justify-center overflow-hidden rounded-[1rem] bg-ink-300">
           {display.image ? (

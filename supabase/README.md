@@ -20,6 +20,7 @@ database (created before a column existed) can be upgraded in place:
 | --- | --- | --- |
 | `migration-001-sprint2.sql` | `packing_lists.priority`, `packing_lists.destination_label`, `trips.is_work` | Folded into `schema.sql` |
 | `migration-002-vehicle-profile.sql` | `trips.vehicle_profile` (+ check constraint) | Folded into `schema.sql` |
+| `migration-003-weather-reasoning.sql` | `trips.weather`, `trips.packing_reasoning` | Folded into `schema.sql` |
 
 Every column these add is already present in `schema.sql`. If you are setting up
 from scratch, ignore them.

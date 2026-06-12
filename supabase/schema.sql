@@ -50,6 +50,8 @@ create table if not exists trips (
   destinations  jsonb not null default '[]',
   carry_on_only boolean not null default false,
   is_work       boolean not null default false,
+  weather       jsonb,             -- last generated weather snapshot (DestinationWeather[])
+  packing_reasoning text,          -- last AI review of the generated kit
   created_at    timestamptz not null default now(),
   updated_at    timestamptz not null default now()
 );

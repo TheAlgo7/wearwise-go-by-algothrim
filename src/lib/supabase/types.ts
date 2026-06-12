@@ -13,10 +13,13 @@ export interface Database {
           destinations:  Json;
           carry_on_only: boolean;
           is_work:       boolean;
+          weather:       Json | null;
+          packing_reasoning: string | null;
           created_at:    string;
           updated_at:    string;
         };
-        Insert: Omit<Database['public']['Tables']['trips']['Row'], 'id' | 'created_at' | 'updated_at'>;
+        Insert: Omit<Database['public']['Tables']['trips']['Row'], 'id' | 'created_at' | 'updated_at' | 'weather' | 'packing_reasoning'> &
+          Partial<Pick<Database['public']['Tables']['trips']['Row'], 'weather' | 'packing_reasoning'>>;
         Update: Partial<Database['public']['Tables']['trips']['Insert']>;
       };
       packing_lists: {
