@@ -153,6 +153,22 @@ function stripBrand(name: string, brand?: string) {
   return name.replace(new RegExp(`^${brand.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*`, 'i'), '').trim();
 }
 
+/** A grooming product's kind, for "one of each". Falls back to the name itself. */
+export function groomingType(name: string): string {
+  const hit = TYPE_PATTERNS.find(([pattern]) => pattern.test(name));
+  return hit ? hit[1] : name.toLowerCase().trim();
+}
+
+/**
+ * True for a seed placeholder ("Face wash", "Sunscreen SPF50") as opposed to a
+ * real product he owns. A real one has a known brand, a photo or a volume.
+ */
+export function isGenericName(item: TravelItem): boolean {
+  if (KNOWN_PRODUCTS[normalizeName(item.name)]) return false;
+  if (item.image_url || item.size_ml != null) return false;
+  return !KNOWN_BRANDS.some((b) => item.name.toLowerCase().startsWith(b.toLowerCase()));
+}
+
 export function getItemDisplay(item: TravelItem): ProductDisplay {
   const normalized = normalizeName(item.name);
   const known = KNOWN_PRODUCTS[normalized];

@@ -42,6 +42,8 @@ export type PackingCategory =
 
 export type PackingPriority = 'critical' | 'normal';
 
+export type PackingSource = 'engine' | 'user';
+
 export interface PackingItem {
   id:                string;
   trip_id:           string;
@@ -51,8 +53,36 @@ export interface PackingItem {
   packed:            boolean;
   is_clothing:       boolean;
   priority:          PackingPriority;
-  notes?:            string;
-  destination_label?: string;  // e.g. "Gulmarg" for per-stop items
+  notes?:            string | null;
+  destination_label?: string | null;  // e.g. "Gulmarg" for per-stop items
+  /**
+   * Still in use until the morning he leaves: toothbrush, face wash, chargers.
+   * Shown as its own group so the bag can be closed the night before.
+   */
+  pack_last?:        boolean;
+  /** 'user' rows were added by hand and survive a rebuild untouched. */
+  source?:           PackingSource;
+  /** Photo, for clothes picked from the Wardrobe. */
+  image_url?:        string | null;
+  wardrobe_item_id?: string | null;
+  /** A suggestion he removed. Hidden, but kept so a rebuild does not re-add it. */
+  dismissed?:        boolean;
+}
+
+// ─── Wardrobe (read-only, from WearWise Wardrobe's `items`) ─────────────────
+
+export interface WardrobeItem {
+  id:            string;
+  name:          string;
+  image_url:     string | null;
+  primary_color: string | null;
+  sleeve_length: string | null;
+  formality:     number | null;
+  min_temp_c:    number | null;
+  max_temp_c:    number | null;
+  vibe:          string[];
+  occasions:     string[];
+  category:      { name: string; layer_type: string } | null;
 }
 
 // ─── Travel items (wardrobe shared) ──────────────────────────────────────────
@@ -91,6 +121,8 @@ export interface PackingRule {
 export interface DestinationWeather {
   city:        string;
   country:     string;
+  /** State the destination resolved to, e.g. "Himachal Pradesh". */
+  region?:     string;
   tempC:       number;
   feelsLikeC:  number;
   description: string;

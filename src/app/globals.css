@@ -12,7 +12,7 @@
     --sab: env(safe-area-inset-bottom);
     --sal: env(safe-area-inset-left);
 
-    /* Motion — shared with WearWise Wardrobe */
+    /* Motion, shared with WearWise Wardrobe */
     --duration-fast: 180ms;
     --duration-base: 240ms;
     --ease-spring:   cubic-bezier(0.22, 1, 0.36, 1);
@@ -21,6 +21,10 @@
     --blue-primary: #6B9FED;
     --blue-hover:   #4B80D9;
     --blue-pressed: #3060B8;
+
+    /* Garment photos from the Wardrobe are flattened onto black; this is the
+       plate they sit on (see .photo-well). */
+    --well: 16 22 31;
 
     /* OneUI border radii */
     --radius-oneui-sm: 14px;
@@ -56,8 +60,20 @@
 @layer components {
   /* Standard card surface */
   .go-card {
-    @apply bg-ink-200 border border-white/[0.06] rounded-[1.65rem] shadow-card;
+    @apply bg-ink-200 border border-white/[0.06] rounded-[1.65rem];
   }
+
+  /* One UI grouped list: one surface, rows separated by hairlines. Used for
+     packing sections and the Gear page instead of a card per item. */
+  .group-list {
+    @apply overflow-hidden rounded-[1.5rem] border border-white/[0.06] bg-ink-200;
+  }
+
+  /* Section heading. Sentence case, fog white. No uppercase tracked blue
+     eyebrows: they restated what the screen already said and spent the
+     accent on labels. */
+  .section-title { @apply text-[15px] font-semibold leading-5 text-fog-100; }
+  .section-meta  { @apply text-[12px] font-medium tabular-nums text-fog-400; }
 
   /* Skeleton shimmer */
   .skeleton {
@@ -71,8 +87,71 @@
     animation:       theme('animation.shimmer');
   }
 
-  /* Press feedback — apply to interactive cards */
+  /* Press feedback, apply to interactive cards */
   .press { @apply transition-transform duration-100 active:scale-[0.97]; }
+
+  /* Segmented control. The chosen segment is a raised neutral, not blue:
+     switching a view is navigation, not a decision. Selection follows the
+     ARIA attribute, so a segment cannot look chosen without announcing it. */
+  .seg {
+    @apply grid gap-1 rounded-full bg-white/[0.05] p-1;
+  }
+  .seg-item {
+    @apply press flex min-h-[44px] items-center justify-center gap-1.5 rounded-full px-2
+           text-[14px] font-semibold text-fog-300 transition-colors duration-200 hover:text-fog-100
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400;
+  }
+  .seg-item[aria-checked='true'],
+  .seg-item[aria-selected='true'],
+  .seg-item[aria-pressed='true'] {
+    @apply bg-ink-500 text-fog-100;
+    box-shadow: 0 1px 0 rgb(255 255 255 / 0.07) inset, 0 2px 10px rgb(0 0 0 / 0.35);
+  }
+
+  /* Choice chip (vibes, categories). Same selected treatment as a segment. */
+  .chip {
+    @apply press inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-white/[0.08]
+           bg-white/[0.04] px-3.5 text-[13px] font-semibold text-fog-300 transition-colors duration-200
+           hover:bg-white/[0.08] hover:text-fog-100
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400;
+  }
+  .chip[aria-pressed='true'],
+  .chip[aria-checked='true'] {
+    @apply border-white/[0.16] bg-ink-500 text-fog-100;
+    box-shadow: 0 1px 0 rgb(255 255 255 / 0.07) inset, 0 2px 10px rgb(0 0 0 / 0.35);
+  }
+
+  /* Text input on a surface */
+  .field {
+    @apply h-12 w-full rounded-oneui border border-white/[0.06] bg-ink-300 px-4 text-[15px] text-fog-100
+           outline-none transition-colors placeholder:text-fog-500 focus:border-blue-400;
+  }
+
+  /* A garment photo's plate. Wardrobe photos are flattened onto black with a
+     faint vignette; blending with `lighten` dissolves that box into the plate. */
+  .photo-well { background: rgb(var(--well)); }
+  .photo-well img { mix-blend-mode: lighten; }
+
+  /* Bottom nav surface. Frosted by default (all Safari can do); on Chromium
+     useLiquidGlass adds real edge refraction and sets data-glass, which thins
+     the tint. Rim light stays faint, the inner glow is the accent's deep blue,
+     never a white shine. */
+  .nav-glass {
+    background: theme('colors.ink.200 / 92%');
+    border: 1px solid rgb(255 255 255 / 0.08);
+    backdrop-filter: blur(28px) saturate(190%);
+    -webkit-backdrop-filter: blur(28px) saturate(190%);
+    box-shadow: 0 -4px 40px rgb(0 0 0 / 0.6), 0 0 0 1px rgb(255 255 255 / 0.05);
+  }
+  .nav-glass[data-glass='liquid'] {
+    background: theme('colors.ink.100 / 58%');
+    border-color: rgb(255 255 255 / 0.07);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.10),
+      inset 0 -1px 0 rgb(255 255 255 / 0.04),
+      inset 0 0 22px theme('colors.blue.700 / 22%'),
+      0 12px 36px -8px rgb(0 0 0 / 0.8);
+  }
 
   /* Horizontal chip/weather scroll row */
   .chip-row {
@@ -83,10 +162,6 @@
   }
   .chip-row > * { scroll-snap-align: start; }
   .chip-row::-webkit-scrollbar { display: none; }
-
-  /* OneUI eyebrow / hero text helpers */
-  .oneui-hero     { @apply text-oneui-hero text-blue-100; }
-  .oneui-hero-sub { @apply text-oneui-cap text-blue-300 tracking-widest uppercase font-semibold; }
 }
 
 @layer utilities {
@@ -95,18 +170,13 @@
   .pl-safe  { padding-left:   env(safe-area-inset-left); }
   .pr-safe  { padding-right:  env(safe-area-inset-right); }
   .mb-safe  { margin-bottom:  env(safe-area-inset-bottom); }
-  .pb-nav   { padding-bottom: calc(env(safe-area-inset-bottom) + 5rem); }
+  .pb-nav   { padding-bottom: calc(env(safe-area-inset-bottom) + 6.5rem); }
 
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
   .text-balance { text-wrap: balance; }
   .text-pretty  { text-wrap: pretty; }
-}
-
-/* ─── Squircle clip-path helper ─── */
-.squircle {
-  clip-path: path('M 0,50 C 0,20 20,0 50,0 S 100,20 100,50 80,100 50,100 0,80 0,50');
 }
 
 /* ─── Focus ring (global) ─── */
@@ -127,19 +197,21 @@
 /* ─── Prevent text selection on interactive chrome ─── */
 button, [role='button'], [role='tab'] { user-select: none; }
 
-/* Page transition — runs on every route change via template.tsx */
+/* Page transition, runs on every route change via template.tsx */
 @keyframes page-enter {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: none; }
 }
 
-/* ─── Reduced motion — shared with WearWise Wardrobe ─── */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration:       0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration:      0.01ms !important;
-  }
+/* A packed item leaving the "To pack" list: it settles out rather than
+   vanishing, so the list visibly gets shorter as the bag fills. */
+@keyframes row-out {
+  from { opacity: 1; transform: none; }
+  to   { opacity: 0; transform: translateX(24px); }
 }
+
+/* Deliberately no `prefers-reduced-motion` override. Gaurav runs reduce-motion
+   ON at the OS level; the blanket `animation-duration: 0.01ms` rule that used
+   to sit here froze the whole app on the only phone it runs on (the same bug
+   the Wardrobe had). Motion here is short, transform-and-opacity only, and
+   never loops. */

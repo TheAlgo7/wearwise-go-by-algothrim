@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchWeather } from '@/lib/weather';
+import { fetchAllWeather } from '@/lib/weather';
 
 export async function GET(req: NextRequest) {
   const cities = req.nextUrl.searchParams.get('cities');
@@ -12,11 +12,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'no valid cities' }, { status: 400 });
   }
 
-  try {
-    const results = await Promise.all(cityList.map(fetchWeather));
-    return NextResponse.json({ weather: results });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    return NextResponse.json({ error: message }, { status: 502 });
+  const { weather, missed } = await fetchAllWeather(cityList);
+  if (weather.length === 0) {
+    return NextResponse.json({ error: `No weather for ${missed.join(', ')}`, missed }, { status: 502 });
   }
+  return NextResponse.json({ weather, missed });
 }

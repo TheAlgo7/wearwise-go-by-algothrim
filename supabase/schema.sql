@@ -68,6 +68,11 @@ create table if not exists packing_lists (
   priority          text not null default 'normal' check (priority in ('critical','normal')),
   destination_label text,
   notes             text,
+  pack_last         boolean not null default false,   -- used until the morning of departure
+  source            text not null default 'engine' check (source in ('engine','user')),
+  image_url         text,                             -- Wardrobe photo for clothes
+  wardrobe_item_id  uuid references items(id) on delete set null,  -- WearWise Wardrobe's items table (shared project)
+  dismissed         boolean not null default false,  -- removed suggestion; kept so a rebuild does not re-add it
   created_at        timestamptz not null default now()
 );
 

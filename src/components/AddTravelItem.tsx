@@ -2,18 +2,15 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus } from 'lucide-react';
+import { Loader2, Plus } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
-import { OneUISheet, OneUIButton } from '@/components/oneui';
+import { OneUISheet } from '@/components/oneui';
 import { CATEGORY_LABELS } from '@/lib/constants';
 import { cn } from '@/lib/cn';
-import type { PackingCategory, ClothingLayer, WarmthRating } from '@/types';
+import type { PackingCategory } from '@/types';
 
-const CATEGORIES: PackingCategory[] = ['clothing', 'grooming', 'electronics', 'documents', 'misc'];
-const LAYERS: ClothingLayer[] = ['base', 'mid', 'outer', 'bottom', 'footwear', 'accessory'];
-const LAYER_LABELS: Record<ClothingLayer, string> = {
-  base: 'Base', mid: 'Mid', outer: 'Outer', bottom: 'Bottom', footwear: 'Footwear', accessory: 'Accessory',
-};
+type GearCategory = Exclude<PackingCategory, 'clothing'>;
+const CATEGORIES: GearCategory[] = ['grooming', 'electronics', 'documents', 'misc'];
 
 interface Props {
   /** 'header' = compact pill for the page header; 'cta' = full-width button for empty state. */
@@ -22,6 +19,14 @@ interface Props {
   onAdded?: () => void;
 }
 
+/**
+ * Add a piece of gear.
+ *
+ * Clothing is gone from here on purpose: Go reads clothes from the Wardrobe,
+ * so a shirt added in Go would be a second, disconnected copy. Layer and
+ * warmth went with it; what is left is a name, a section, and for grooming
+ * the bottle size that decides the carry-on warning.
+ */
 export function AddTravelItem({ variant = 'header', onAdded }: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -29,51 +34,39 @@ export function AddTravelItem({ variant = 'header', onAdded }: Props) {
   const [error, setError] = useState('');
 
   const [name, setName] = useState('');
-  const [category, setCategory] = useState<PackingCategory>('clothing');
-  const [layer, setLayer] = useState<ClothingLayer | null>('base');
-  const [warmth, setWarmth] = useState<WarmthRating | null>(null);
+  const [category, setCategory] = useState<GearCategory>('grooming');
   const [sizeMl, setSizeMl] = useState('');
   const [tags, setTags] = useState('');
 
-  const isClothing = category === 'clothing';
-
-  const reset = () => {
-    setName(''); setCategory('clothing'); setLayer('base');
-    setWarmth(null); setSizeMl(''); setTags(''); setError('');
+  const openSheet = () => {
+    setName(''); setCategory('grooming'); setSizeMl(''); setTags(''); setError('');
+    setOpen(true);
   };
-
-  const openSheet = () => { reset(); setOpen(true); };
 
   const submit = async () => {
     if (!name.trim() || saving) return;
     setSaving(true);
     setError('');
 
-    const parsedTags = tags
-      .split(',')
-      .map((t) => t.trim())
-      .filter(Boolean);
+    const parsedTags = tags.split(',').map((t) => t.trim()).filter(Boolean);
     const parsedMl = sizeMl.trim() ? Math.max(0, parseInt(sizeMl, 10) || 0) : null;
 
-    const insert = {
-      name: name.trim(),
-      category,
-      is_clothing: isClothing,
-      layer: isClothing ? layer : null,
-      warmth: isClothing ? warmth : null,
-      size_ml: category === 'grooming' ? parsedMl : null,
-      tags: parsedTags,
-    };
-
     try {
-      const supabase = createClient();
-      const { error: insertError } = await supabase.from('travel_items').insert(insert);
+      const { error: insertError } = await createClient().from('travel_items').insert({
+        name: name.trim(),
+        category,
+        is_clothing: false,
+        layer: null,
+        warmth: null,
+        size_ml: category === 'grooming' ? parsedMl : null,
+        tags: parsedTags,
+      });
       if (insertError) throw new Error(insertError.message);
       setOpen(false);
       onAdded?.();
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not save item');
+      setError(err instanceof Error ? err.message : 'Could not save that');
     } finally {
       setSaving(false);
     }
@@ -85,156 +78,97 @@ export function AddTravelItem({ variant = 'header', onAdded }: Props) {
         <button
           type="button"
           onClick={openSheet}
-          aria-label="Add travel item"
-          className={cn(
-            'flex h-10 items-center gap-1.5 rounded-full bg-blue-400/[0.14] pl-2.5 pr-3.5 text-[13px] font-semibold text-blue-200',
-            'transition-colors hover:bg-blue-400/20 active:scale-[0.97]',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400',
-          )}
+          aria-label="Add gear"
+          className="press flex h-11 items-center gap-1.5 rounded-full bg-white/[0.08] pl-3 pr-4 text-[14px] font-semibold text-fog-100 transition-colors hover:bg-white/[0.12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
         >
-          <Plus size={16} strokeWidth={2.4} aria-hidden="true" />
+          <Plus size={17} strokeWidth={2.4} aria-hidden />
           Add
         </button>
       ) : (
-        <OneUIButton onClick={openSheet} className="w-full">
-          <Plus size={16} strokeWidth={2.4} aria-hidden="true" />
-          Add your first item
-        </OneUIButton>
+        <button
+          type="button"
+          onClick={openSheet}
+          className="press flex h-12 items-center justify-center gap-2 rounded-full bg-blue-400 px-6 text-[15px] font-semibold text-ink-0 transition-colors hover:bg-blue-300"
+        >
+          <Plus size={17} strokeWidth={2.4} aria-hidden />
+          Add your first thing
+        </button>
       )}
 
-      <OneUISheet open={open} onClose={() => setOpen(false)} title="Add travel item">
+      <OneUISheet open={open} onClose={() => setOpen(false)} title="Add gear">
         <div className="space-y-5">
-          {/* Name */}
-          <label className="block space-y-1.5">
-            <span className="text-xs font-medium text-fog-500">Name</span>
+          <label className="block space-y-1.5" htmlFor="gear-name">
+            <span className="px-1 text-[13px] font-medium text-fog-300">Name</span>
             <input
+              id="gear-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Linen shirt, Sunscreen SPF50"
+              placeholder="Beardo Hair Clay Wax, USB-C cable"
               autoFocus
-              className="h-12 w-full rounded-oneui bg-ink-300 px-4 text-[15px] text-fog-100 placeholder:text-fog-500 outline-none focus:ring-2 focus:ring-blue-400"
+              className="field"
             />
           </label>
 
-          {/* Category */}
           <div className="space-y-2">
-            <p className="text-xs font-medium text-fog-500">Category</p>
-            <div className="flex flex-wrap gap-1.5" role="group" aria-label="Category">
+            <p className="px-1 text-[13px] font-medium text-fog-300">Section</p>
+            <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Section">
               {CATEGORIES.map((cat) => (
-                <button
-                  key={cat}
-                  type="button"
-                  aria-pressed={category === cat}
-                  onClick={() => setCategory(cat)}
-                  className={cn(
-                    'flex min-h-[44px] items-center rounded-full px-3.5 text-xs font-medium transition-all duration-200 active:scale-[0.97]',
-                    category === cat
-                      ? 'bg-blue-400/20 text-blue-100 ring-1 ring-blue-300/45'
-                      : 'bg-ink-300 text-fog-500 hover:bg-ink-400 hover:text-fog-200',
-                  )}
-                >
-                  {CATEGORY_LABELS[cat]}
+                <button key={cat} type="button" role="radio" aria-checked={category === cat} onClick={() => setCategory(cat)} className="chip">
+                  {cat === 'misc' ? 'Other' : CATEGORY_LABELS[cat]}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Clothing-only: layer + warmth */}
-          {isClothing && (
-            <>
-              <div className="space-y-2">
-                <p className="text-xs font-medium text-fog-500">Layer</p>
-                <div className="flex flex-wrap gap-1.5" role="group" aria-label="Clothing layer">
-                  {LAYERS.map((l) => (
-                    <button
-                      key={l}
-                      type="button"
-                      aria-pressed={layer === l}
-                      onClick={() => setLayer(l)}
-                      className={cn(
-                        'flex min-h-[44px] items-center rounded-full px-3.5 text-xs font-medium transition-all duration-200 active:scale-[0.97]',
-                        layer === l
-                          ? 'bg-blue-400/20 text-blue-100 ring-1 ring-blue-300/45'
-                          : 'bg-ink-300 text-fog-500 hover:bg-ink-400 hover:text-fog-200',
-                      )}
-                    >
-                      {LAYER_LABELS[l]}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <p className="text-xs font-medium text-fog-500">Warmth <span className="text-fog-600">(optional)</span></p>
-                <div className="flex gap-1.5" role="group" aria-label="Warmth rating">
-                  {([1, 2, 3, 4, 5] as WarmthRating[]).map((w) => (
-                    <button
-                      key={w}
-                      type="button"
-                      aria-pressed={warmth === w}
-                      onClick={() => setWarmth(warmth === w ? null : w)}
-                      className={cn(
-                        'h-11 flex-1 rounded-oneui-sm text-sm font-semibold tabular-nums transition-all duration-200 active:scale-[0.97]',
-                        warmth !== null && w <= warmth
-                          ? 'bg-blue-400/20 text-blue-100 ring-1 ring-blue-300/45'
-                          : 'bg-ink-300 text-fog-500 hover:bg-ink-400',
-                      )}
-                    >
-                      {w}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* Grooming-only: liquid volume */}
           {category === 'grooming' && (
-            <label className="block space-y-1.5">
-              <span className="text-xs font-medium text-fog-500">
-                Liquid volume in ml <span className="text-fog-600">(optional — flags carry-on limit)</span>
+            <label className="block space-y-1.5" htmlFor="gear-ml">
+              <span className="px-1 text-[13px] font-medium text-fog-300">
+                Bottle size in ml <span className="text-fog-400">(for the 100ml cabin rule)</span>
               </span>
               <input
+                id="gear-ml"
                 type="number"
                 inputMode="numeric"
                 value={sizeMl}
                 min={0}
                 onChange={(e) => setSizeMl(e.target.value)}
-                placeholder="e.g. 100"
-                className="h-12 w-full rounded-oneui bg-ink-300 px-4 text-[15px] text-fog-100 placeholder:text-fog-500 outline-none focus:ring-2 focus:ring-blue-400"
+                placeholder="50"
+                className="field"
               />
             </label>
           )}
 
-          {/* Tags */}
-          <label className="block space-y-1.5">
-            <span className="text-xs font-medium text-fog-500">Tags <span className="text-fog-600">(optional, comma-separated)</span></span>
+          <label className="block space-y-1.5" htmlFor="gear-tags">
+            <span className="px-1 text-[13px] font-medium text-fog-300">
+              Tags <span className="text-fog-400">(optional, comma-separated; &ldquo;work&rdquo; packs it for work trips only)</span>
+            </span>
             <input
+              id="gear-tags"
               type="text"
               value={tags}
               onChange={(e) => setTags(e.target.value)}
-              placeholder="e.g. hygiene, liquid"
-              className="h-12 w-full rounded-oneui bg-ink-300 px-4 text-[15px] text-fog-100 placeholder:text-fog-500 outline-none focus:ring-2 focus:ring-blue-400"
+              placeholder="liquid, work"
+              className="field"
             />
           </label>
 
           {error && (
-            <p role="alert" className="rounded-oneui-sm bg-red-400/10 px-3 py-2 text-sm text-red-400">
-              {error}
-            </p>
+            <p role="alert" className="rounded-oneui-sm bg-red-400/10 px-3 py-2 text-sm text-red-300">{error}</p>
           )}
 
-          <OneUIButton
+          <button
             type="button"
-            size="lg"
-            loading={saving}
-            disabled={!name.trim()}
-            onClick={submit}
-            className="w-full"
+            disabled={!name.trim() || saving}
+            onClick={() => void submit()}
+            className={cn(
+              'press flex h-14 w-full items-center justify-center gap-2 rounded-full text-[16px] font-semibold transition-colors',
+              'bg-blue-400 text-ink-0 hover:bg-blue-300 disabled:bg-white/[0.07] disabled:text-fog-500',
+            )}
           >
-            {saving ? 'Saving…' : 'Add to kit'}
-          </OneUIButton>
+            {saving && <Loader2 size={18} className="animate-spin" aria-hidden />}
+            {saving ? 'Saving' : 'Add to gear'}
+          </button>
         </div>
       </OneUISheet>
     </>

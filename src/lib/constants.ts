@@ -26,7 +26,7 @@ export const CATEGORY_LABELS: Record<string, string> = {
   grooming: 'Grooming',
   electronics: 'Electronics',
   documents: 'Documents',
-  misc: 'Misc',
+  misc: 'Other',
 };
 
 export const TRANSPORT_LABELS: Record<string, string> = {

@@ -2,13 +2,23 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useSyncExternalStore } from 'react';
-import { Luggage, Package } from 'lucide-react';
+import { useRef, useSyncExternalStore } from 'react';
+import { Backpack, Luggage, Plus } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { useLiquidGlass } from '@/hooks/useLiquidGlass';
 
+/**
+ * Two places and one action.
+ *
+ * The tabs were "Trips" and "Items", and the action was a suitcase with a
+ * small plus badge, which read as a third tab rather than "new trip". The
+ * second tab is now "Gear" (what he travels with; clothes come from the
+ * Wardrobe), and the action is an unmistakable blue plus, the only solid blue
+ * on the bar.
+ */
 const NAV_ITEMS = [
   { href: '/',      label: 'Trips', Icon: Luggage },
-  { href: '/items', label: 'Items', Icon: Package },
+  { href: '/items', label: 'Gear',  Icon: Backpack },
 ] as const;
 
 export function BottomNav() {
@@ -18,6 +28,8 @@ export function BottomNav() {
     () => true,
     () => false,
   );
+  const glassRef = useRef<HTMLDivElement>(null);
+  useLiquidGlass(glassRef, 'go-nav-glass');
 
   const currentPath = mounted ? pathname : '';
   const newTripActive = currentPath === '/trips/new';
@@ -35,14 +47,7 @@ export function BottomNav() {
       }}
     >
       <div className="flex items-center gap-2.5">
-        <div
-          className="flex h-[58px] items-center gap-1 rounded-full border border-white/[0.07] bg-ink-200/90 px-2"
-          style={{
-            backdropFilter: 'blur(28px) saturate(190%)',
-            WebkitBackdropFilter: 'blur(28px) saturate(190%)',
-            boxShadow: '0 -4px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05)',
-          }}
-        >
+        <div ref={glassRef} className="nav-glass flex h-[60px] items-center gap-1 rounded-full px-1.5">
           {NAV_ITEMS.map(({ href, label, Icon }) => {
             const active = href === '/'
               ? currentPath === '/' || (currentPath.startsWith('/trips') && currentPath !== '/trips/new')
@@ -54,12 +59,12 @@ export function BottomNav() {
                 aria-label={label}
                 aria-current={active ? 'page' : undefined}
                 className={cn(
-                  'relative flex items-center justify-center h-11 rounded-full px-3.5 min-w-[48px]',
+                  'relative flex h-12 min-w-[48px] items-center justify-center rounded-full px-3.5',
                   'transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400',
-                  active ? 'bg-blue-400/[22%] text-blue-50' : 'text-white/40 hover:text-white/70',
+                  active ? 'bg-white/[0.12] text-fog-100' : 'text-fog-400 hover:text-fog-100',
                 )}
               >
-                <Icon size={20} strokeWidth={active ? 2.1 : 1.7} aria-hidden className="flex-shrink-0" />
+                <Icon size={20} strokeWidth={active ? 2.1 : 1.8} aria-hidden className="flex-shrink-0" />
                 <span
                   className="overflow-hidden whitespace-nowrap text-[13px] font-semibold leading-none"
                   style={{
@@ -81,43 +86,15 @@ export function BottomNav() {
           aria-label="New trip"
           aria-current={newTripActive ? 'page' : undefined}
           className={cn(
-            'relative flex h-[58px] w-[58px] items-center justify-center rounded-full border transition-all duration-200 active:scale-[0.96]',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400',
-            newTripActive
-              ? 'border-white/[0.08] bg-ink-200/95 text-blue-100 ring-1 ring-blue-300/25'
-              : 'border-white/[0.07] bg-ink-200/90 text-fog-500 hover:text-blue-200',
+            'press flex h-[60px] w-[60px] items-center justify-center rounded-full transition-colors duration-200',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-0',
+            newTripActive ? 'bg-ink-500 text-fog-300' : 'bg-blue-400 text-ink-0 hover:bg-blue-300',
           )}
-          style={{
-            backdropFilter: 'blur(28px) saturate(190%)',
-            WebkitBackdropFilter: 'blur(28px) saturate(190%)',
-            boxShadow: '0 -4px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05)',
-          }}
+          style={{ boxShadow: newTripActive ? undefined : '0 8px 26px rgb(48 96 184 / 0.45)' }}
         >
-          <AddTripGlyph active={newTripActive} />
+          <Plus size={26} strokeWidth={2.4} aria-hidden />
         </Link>
       </div>
     </nav>
-  );
-}
-
-function AddTripGlyph({ active }: { active: boolean }) {
-  return (
-    <span className="relative flex h-8 w-8 items-center justify-center" aria-hidden="true">
-      <span
-        className={cn(
-          'absolute inset-0 rounded-full transition-colors duration-200',
-          active ? 'bg-blue-400/18' : 'bg-ink-300/45',
-        )}
-      />
-      <Luggage className="relative" size={21} strokeWidth={2.35} />
-      <span
-        className={cn(
-          'absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full text-[12px] font-bold leading-none shadow-[0_0_0_2px_rgba(23,26,34,0.95)]',
-          active ? 'bg-blue-400 text-ink-0' : 'bg-ink-500 text-fog-300',
-        )}
-      >
-        +
-      </span>
-    </span>
   );
 }

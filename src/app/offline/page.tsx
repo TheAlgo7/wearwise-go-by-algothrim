@@ -13,13 +13,13 @@ export default function OfflinePage() {
       </div>
       <div>
         <h1 className="text-xl font-semibold text-fog-100 mb-2">You are offline</h1>
-        <p className="text-sm text-fog-600 leading-relaxed max-w-[260px] mx-auto">
+        <p className="text-sm text-fog-400 leading-relaxed max-w-[260px] mx-auto">
           Your packing lists are saved. Connect to the internet to generate new lists or sync changes.
         </p>
       </div>
       <button
         onClick={() => window.location.reload()}
-        className="px-6 py-3 bg-blue-400 text-white rounded-oneui font-medium text-sm hover:bg-blue-500 transition-colors"
+        className="press h-12 rounded-full bg-blue-400 px-6 text-[15px] font-semibold text-ink-0 transition-colors hover:bg-blue-300"
       >
         Try again
       </button>

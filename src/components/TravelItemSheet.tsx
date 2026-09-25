@@ -55,7 +55,7 @@ export function TravelItemSheet({ item, onClose, onDeleted }: Props) {
   const display = getItemDisplay(item);
 
   return (
-    <OneUISheet open onClose={close} title="Travel item">
+    <OneUISheet open onClose={close} title="Gear">
       <div className="space-y-5">
         <div className="flex items-center gap-4">
           <div className="relative flex h-[72px] w-[72px] shrink-0 items-center justify-center overflow-hidden rounded-[1.2rem] bg-ink-300">
@@ -121,7 +121,7 @@ export function TravelItemSheet({ item, onClose, onDeleted }: Props) {
         {confirming ? (
           <div role="alert" className="flex items-center gap-3 rounded-oneui bg-red-400/10 px-4 py-3">
             <p className="flex-1 text-sm text-red-300">
-              Remove from your kit? Future packing lists won&apos;t include it.
+              Remove from your gear? Future lists won&apos;t include it.
             </p>
             <button
               type="button"
@@ -147,7 +147,7 @@ export function TravelItemSheet({ item, onClose, onDeleted }: Props) {
             className="w-full"
           >
             <Trash2 size={16} aria-hidden="true" />
-            Remove from kit
+            Remove from gear
           </OneUIButton>
         )}
       </div>

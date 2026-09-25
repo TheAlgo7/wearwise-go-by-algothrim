@@ -53,12 +53,12 @@ export function OneUISheet({ open, onClose, title, children, className }: OneUIS
         </div>
 
         {title && (
-          <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-3.5">
-            <h2 className="text-base font-semibold text-fog-100">{title}</h2>
+          <div className="flex items-center justify-between px-5 pb-2 pt-1">
+            <h2 className="text-[20px] font-semibold leading-7 text-fog-100">{title}</h2>
             <button
               onClick={onClose}
               aria-label="Close sheet"
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-blue-300/45 text-blue-100 transition-colors hover:bg-blue-400/10"
+              className="press flex h-11 w-11 items-center justify-center rounded-full bg-white/[0.08] text-fog-200 transition-colors hover:bg-white/[0.12]"
             >
               <X size={18} strokeWidth={2.1} />
             </button>

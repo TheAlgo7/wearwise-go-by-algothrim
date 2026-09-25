@@ -2,7 +2,7 @@
 // network-first for pages, stale-while-revalidate for assets, network-only for APIs.
 // Bump SW_VERSION to force all clients to pick up changes.
 
-const SW_VERSION = 'v4';
+const SW_VERSION = 'v5';
 const RUNTIME_CACHE = `wearwise-go-runtime-${SW_VERSION}`;
 const PRECACHE     = `wearwise-go-precache-${SW_VERSION}`;
 

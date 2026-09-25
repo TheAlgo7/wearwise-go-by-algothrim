@@ -29,27 +29,32 @@ const config: Config = {
           500: '#A86840',   // deeper copper (borders, dividers)
           600: '#8A5230',   // pressed / dark accent
         },
+        // September 2026: rebuilt in OKLCH on the accent's own hue (258). The
+        // old scale was a flat grey-navy with ink-200 and ink-300 barely apart,
+        // and fog-600 (used for every item note) sat under 3:1 on a card.
+        //   ink L: 12 / 16 / 20 / 23.5 / 27.5 / 33 / 40,  C 0.012-0.028
+        //   fog L: 96 / 87 / 77 / 67 / 57 / 49 / 41
         ink: {
           0:   '#000000',
-          50:  '#080A0F',
-          100: '#10131A',
-          200: '#171A22',
-          300: '#1E232D',
-          400: '#252B37',
-          500: '#303848',
-          600: '#3D4659',
-          700: '#505B72',
+          50:  '#04060A',
+          100: '#090D14',
+          200: '#10161F',
+          300: '#181E29',
+          400: '#202834',
+          500: '#2D3643',
+          600: '#3E4857',
+          700: '#505B6C',
           800: '#6B7892',
           900: '#94A0B8',
         },
         fog: {
-          100: '#F3F6FF',
-          200: '#DDE7FA',
-          300: '#BAC8E2',
-          400: '#91A0BA',
-          500: '#6F7D97',
-          600: '#535F76',
-          700: '#3E485B',
+          100: '#EEF2F7',   // primary text
+          200: '#CCD5E2',   // secondary
+          300: '#A9B5C8',   // tertiary, 8.8:1 on a card
+          400: '#8996AB',   // metadata, 6.1:1
+          500: '#6B788C',   // icons, placeholders
+          600: '#556173',   // decorative only, never text
+          700: '#404B5B',
           800: '#2B3446',
           900: '#20283A',
         },

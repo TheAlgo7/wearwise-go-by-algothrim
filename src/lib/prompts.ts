@@ -1,72 +1,67 @@
-import type { Trip, DestinationWeather, GeneratedPackingList } from '@/types';
+import type { Trip, DestinationWeather, PackingItem } from '@/types';
 import { TRANSPORT_LABELS, URGENCY_DAYS } from './constants';
 import { getVehicleProfileInfo } from './vehicles';
 
-export function buildPackingPrompt(
+/**
+ * The model reads the finished list and writes up to three short notes.
+ *
+ * It used to be asked for "a packing intelligence note" of up to 200 words,
+ * which arrived as a paragraph wall above the checklist and pushed the list,
+ * the thing he opened the screen for, below the fold. Three lines, plain text,
+ * each one a specific call about this trip, or nothing.
+ */
+export function buildNotesPrompt(
   trip: Trip,
   weather: DestinationWeather[],
-  engineList: Omit<GeneratedPackingList, 'reasoning'>,
-): string {
-  const totalNights  = trip.destinations.reduce((sum, d) => sum + d.nights, 0);
-  const isPlane      = trip.transport === 'plane';
-  const vehicleInfo  = trip.transport === 'car' ? getVehicleProfileInfo(trip.vehicle_profile) : undefined;
-  const departure    = new Date(trip.departure + 'T00:00:00');
-  const daysUntil    = Math.ceil((departure.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-  const isUrgent     = daysUntil <= URGENCY_DAYS;
+  items: PackingItem[],
+): { system: string; user: string } {
+  const totalNights = trip.destinations.reduce((sum, d) => sum + d.nights, 0);
+  const isPlane = trip.transport === 'plane';
+  const vehicleInfo = trip.transport === 'car' ? getVehicleProfileInfo(trip.vehicle_profile) : undefined;
+  const departure = new Date(trip.departure + 'T00:00:00');
+  const daysUntil = Math.ceil((departure.getTime() - Date.now()) / 86_400_000);
+  const isUrgent = daysUntil <= URGENCY_DAYS;
 
-  const weatherSummary = weather
-    .map(w => `${w.city}: ${w.tempC}°C, ${w.description}, humidity ${w.humidity}%`)
-    .join('\n');
+  const weatherSummary = weather.length
+    ? weather.map(w => `${w.city}: ${w.tempC}°C, ${w.description}, humidity ${w.humidity}%`).join('\n')
+    : 'Unknown';
 
   const destinationSummary = trip.destinations
-    .map(d => `${d.city} (${d.nights} night${d.nights !== 1 ? 's' : ''}${d.situation ? `, ${d.situation}` : ''})`)
-    .join(' → ');
+    .map(d => `${d.city.split(',')[0]} (${d.nights} night${d.nights !== 1 ? 's' : ''}${d.situation ? `, ${d.situation}` : ''})`)
+    .join(' then ');
 
-  const formatSection = (items: GeneratedPackingList[keyof Omit<GeneratedPackingList, 'reasoning'>]) =>
-    items.map(i => `- ${i.quantity}× ${i.name}${i.destination_label ? ` [for ${i.destination_label}]` : ''}${i.notes ? ` (${i.notes})` : ''}`).join('\n');
+  const line = (i: PackingItem) =>
+    `- ${i.quantity > 1 ? `${i.quantity}x ` : ''}${i.name}${i.pack_last ? ' [pack last]' : ''}${i.packed ? ' [packed]' : ''}${i.notes ? ` (${i.notes})` : ''}`;
 
-  const systemPrompt = `You are a meticulous packing expert who gives concrete, honest, no-fluff advice.
-You know that the worst packing mistake is not forgetting something — it is bringing too much and arriving exhausted.
-Your job: review the deterministic packing list below and add exactly the observations that matter.
+  const system = `You review a traveller's packing list and write at most three short notes about it.
 Rules:
-- Never suggest more than 3 additions per category
-- Flag redundancies if obvious (e.g. 3 similar jackets)
-- If travelling by plane with carry-on only, flag any item that's likely over 100ml
-- Keep your response under 200 words
-- Write in second person ("You'll want...", "Skip the...")
-- No em dashes`;
+- Plain text only. One note per line. No bullets, numbers, markdown, headings or emoji.
+- Each note under 18 words, second person, specific to this trip.
+- Only what matters: something missing, something to cut, or a real watch-out (liquids over 100ml on a carry-on, rain, cold, a long drive).
+- Never repeat an item that is already on the list as if it were missing.
+- If the list is already right, write one short line saying so.
+- No em dashes or en dashes. Use commas or full stops.`;
 
-  const userPrompt = `Trip: ${trip.name}
-Departure: ${trip.departure}${isUrgent ? ' — URGENT, leaving very soon' : ''}
-Transport: ${TRANSPORT_LABELS[trip.transport]}${vehicleInfo ? ` (${vehicleInfo.label}: ${vehicleInfo.packingNote})` : ''}${isPlane && trip.carry_on_only ? ' — carry-on only' : ''}
-Work trip: ${trip.is_work ? 'Yes' : 'No'}
-Itinerary: ${destinationSummary}
-Total: ${totalNights} night${totalNights !== 1 ? 's' : ''}
+  const user = `Trip: ${trip.name}
+Leaving: ${trip.departure}${isUrgent ? ' (very soon)' : ''}
+Getting there: ${TRANSPORT_LABELS[trip.transport]}${vehicleInfo ? `, ${vehicleInfo.label}: ${vehicleInfo.packingNote}` : ''}${isPlane && trip.carry_on_only ? ', carry-on only' : ''}
+Work trip: ${trip.is_work ? 'yes' : 'no'}
+Route: ${destinationSummary}, ${totalNights} night${totalNights !== 1 ? 's' : ''} total
 
-Weather at destinations:
+Weather now:
 ${weatherSummary}
 
-Deterministic packing list generated:
+The list:
+${items.map(line).join('\n')}`;
 
-DON'T FORGET (critical):
-${formatSection(engineList.critical)}
+  return { system, user };
+}
 
-CLOTHING:
-${formatSection(engineList.clothing)}
-
-GROOMING:
-${formatSection(engineList.grooming)}
-
-ELECTRONICS:
-${formatSection(engineList.electronics)}
-
-DOCUMENTS:
-${formatSection(engineList.documents)}
-
-MISC:
-${formatSection(engineList.misc)}
-
-Review this list and give a concise packing intelligence note: what to add, what to cut, and any situational watch-outs.${isUrgent ? ' Start with the single most critical item to grab first.' : ''}`;
-
-  return JSON.stringify({ system: systemPrompt, user: userPrompt });
+/** Normalise whatever the model returns into at most three clean lines. */
+export function parseNotes(text: string): string[] {
+  return text
+    .split('\n')
+    .map(l => l.replace(/^[\s\-*•\d.)]+/, '').replace(/\*\*/g, '').replace(/\s[–—]\s/g, ', ').trim())
+    .filter(l => l.length > 3)
+    .slice(0, 3);
 }

@@ -34,9 +34,15 @@ export interface Database {
           priority:          string;
           notes:             string | null;
           destination_label: string | null;
+          pack_last:         boolean;
+          source:            string;
+          image_url:         string | null;
+          wardrobe_item_id:  string | null;
+          dismissed:         boolean;
           created_at:        string;
         };
-        Insert: Omit<Database['public']['Tables']['packing_lists']['Row'], 'id' | 'created_at'>;
+        Insert: Omit<Database['public']['Tables']['packing_lists']['Row'], 'id' | 'created_at' | 'pack_last' | 'source' | 'image_url' | 'wardrobe_item_id' | 'dismissed'> &
+          Partial<Pick<Database['public']['Tables']['packing_lists']['Row'], 'pack_last' | 'source' | 'image_url' | 'wardrobe_item_id' | 'dismissed'>>;
         Update: Partial<Database['public']['Tables']['packing_lists']['Insert']>;
       };
       travel_items: {

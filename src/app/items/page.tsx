@@ -1,231 +1,197 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { FileText, Luggage, PackageOpen, Plug, Shirt, Sparkles } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ArrowUpRight, ChevronRight, FileText, Luggage, PackageOpen, Plug, Shirt, Sparkles } from 'lucide-react';
 import type { ElementType } from 'react';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
-import { OneUIHeader } from '@/components/oneui';
 import { AddTravelItem } from '@/components/AddTravelItem';
 import { TravelItemSheet } from '@/components/TravelItemSheet';
-import { CATEGORY_LABELS, CATEGORY_ORDER } from '@/lib/constants';
-import { cn } from '@/lib/cn';
+import { CATEGORY_LABELS } from '@/lib/constants';
 import { getItemDisplay } from '@/lib/item-display';
 import type { TravelItem, PackingCategory } from '@/types';
 
-type NormalCategory = Exclude<(typeof CATEGORY_ORDER)[number], 'critical'>;
+type GearCategory = Exclude<PackingCategory, 'clothing'>;
+type Filter = GearCategory | 'all';
 
-const CATEGORY_ICONS: Record<NormalCategory, ElementType> = {
-  clothing: Shirt,
+const GEAR_CATEGORIES: GearCategory[] = ['grooming', 'electronics', 'documents', 'misc'];
+
+const CATEGORY_ICONS: Record<GearCategory, ElementType> = {
   grooming: Sparkles,
   electronics: Plug,
   documents: FileText,
   misc: Luggage,
 };
 
+const WARDROBE_URL = 'https://wearwise-by-algothrim.vercel.app/wardrobe';
+
+/**
+ * Gear: what he travels with, apart from clothes.
+ *
+ * It was "Travel items", a stack of 37 full cards, and nothing on it said
+ * where clothes came from (nowhere, until now). Clothes are the Wardrobe's
+ * job, and Go reads them straight from it, so this page says so in one line
+ * and keeps to the gear: grouped lists, the way a phone's own settings lists
+ * work, with a filter when he wants one shelf.
+ */
 export default function ItemsPage() {
   // null = loading (renders skeletons); [] = loaded, empty.
   const [items, setItems] = useState<TravelItem[] | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [selected, setSelected] = useState<TravelItem | null>(null);
+  const [filter, setFilter] = useState<Filter>('all');
+  const [wardrobeCount, setWardrobeCount] = useState<number | null>(null);
 
   const load = useCallback(async () => {
     const supabase = createClient();
-    const { data, error } = await supabase.from('travel_items').select('*').order('name');
+    const [{ data, error }, { count }] = await Promise.all([
+      supabase.from('travel_items').select('*').order('name'),
+      supabase.from('items').select('id', { count: 'exact', head: true }).eq('archived', false),
+    ]);
     setLoadError(Boolean(error));
-    setItems(error ? [] : ((data ?? []) as TravelItem[]));
+    setItems(error ? [] : ((data ?? []) as TravelItem[]).filter((i) => i.category !== 'clothing'));
+    setWardrobeCount(count ?? null);
   }, []);
 
-  // load() sets state only after an awaited fetch (not synchronous) — same pattern as /trips/[id].
+  // load() sets state only after an awaited fetch (not synchronous).
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, [load]);
 
   const loading = items === null;
-  const list = items ?? [];
-  const normalCategories = CATEGORY_ORDER.filter((c): c is NormalCategory => c !== 'critical');
-
-  const byCategory = normalCategories.reduce<Record<PackingCategory, TravelItem[]>>(
-    (acc, cat) => {
-      acc[cat] = list.filter((i) => i.category === cat);
-      return acc;
-    },
-    { clothing: [], grooming: [], electronics: [], documents: [], misc: [] },
+  const list = useMemo(() => items ?? [], [items]);
+  const counts = useMemo(
+    () => Object.fromEntries(GEAR_CATEGORIES.map((c) => [c, list.filter((i) => i.category === c).length])) as Record<GearCategory, number>,
+    [list],
   );
+  const shownCategories = GEAR_CATEGORIES.filter((c) => (filter === 'all' || filter === c) && counts[c] > 0);
 
   return (
     <>
-      <OneUIHeader
-        title="Travel items"
-        subtitle={loading ? 'Your kit' : `${list.length} item${list.length !== 1 ? 's' : ''} in your kit`}
-        right={<AddTravelItem onAdded={load} />}
-      />
+      <header className="flex items-end justify-between gap-4 px-5 pb-4 pt-12">
+        <div className="min-w-0">
+          <h1 className="text-[30px] font-semibold leading-[1.15] tracking-tight text-fog-100">Gear</h1>
+          <p className="mt-1.5 text-[15px] text-fog-300">
+            {loading ? 'What you travel with.' : `${list.length} things Go can pack for you.`}
+          </p>
+        </div>
+        <AddTravelItem onAdded={load} />
+      </header>
 
-      <div className="px-4 pt-3 pb-8 space-y-6">
+      <div className="flex flex-col gap-6 px-4 pb-8">
+        <a
+          href={WARDROBE_URL}
+          className="press go-card flex min-h-[64px] items-center gap-3 px-4 py-3 transition-colors hover:bg-ink-300"
+        >
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-fog-200">
+            <Shirt size={17} aria-hidden />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[15px] font-semibold text-fog-100">Clothes come from your Wardrobe</span>
+            <span className="block text-[12px] text-fog-400">
+              {wardrobeCount !== null ? `${wardrobeCount} pieces, picked by weather and occasion` : 'Picked by weather and occasion'}
+            </span>
+          </span>
+          <ArrowUpRight size={17} className="shrink-0 text-fog-400" aria-hidden />
+        </a>
+
         {loading ? (
-          <ItemsSkeleton />
+          <div className="space-y-3" aria-hidden="true">
+            <div className="h-11 animate-pulse rounded-full bg-white/[0.05]" />
+            <div className="skeleton h-[280px] rounded-[1.5rem]" />
+          </div>
         ) : loadError ? (
-          <div role="alert" className="rounded-[1.65rem] bg-ink-100 px-4 py-4">
+          <div role="alert" className="go-card px-4 py-4">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-[15px] font-semibold leading-5 text-fog-100">Couldn&apos;t load your kit</p>
-                <p className="mt-1 text-[13px] leading-5 text-fog-500">Check your connection and try again.</p>
+                <p className="text-[15px] font-semibold leading-5 text-fog-100">Couldn&apos;t load your gear</p>
+                <p className="mt-1 text-[13px] leading-5 text-fog-400">Check your connection and try again.</p>
               </div>
               <button
                 type="button"
-                onClick={() => { setItems(null); load(); }}
-                className="min-h-[44px] shrink-0 rounded-full bg-blue-400/[0.14] px-5 text-[13px] font-semibold text-blue-200 transition-colors hover:bg-blue-400/[0.22]"
+                onClick={() => { setItems(null); void load(); }}
+                className="press min-h-[44px] shrink-0 rounded-full bg-blue-400/[0.14] px-5 text-[13px] font-semibold text-blue-200 transition-colors hover:bg-blue-400/[0.22]"
               >
                 Retry
               </button>
             </div>
           </div>
         ) : list.length === 0 ? (
-          <div className="rounded-[2rem] border border-white/[0.07] bg-ink-200 px-5 py-8 text-center shadow-card">
-            <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-blue-400/[0.12] flex items-center justify-center">
-              <PackageOpen size={28} className="text-blue-300" aria-hidden="true" />
-            </div>
-            <p className="mb-1 text-[17px] font-semibold text-fog-100">Your kit is empty</p>
-            <p className="mx-auto mb-5 max-w-[260px] text-sm leading-relaxed text-fog-400">
-              Add the things you travel with — clothes, grooming, electronics, documents.
-              WearWise Go reuses them to build every packing list.
+          <div className="go-card flex flex-col items-center px-5 py-8 text-center">
+            <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-white/[0.06]">
+              <PackageOpen size={26} className="text-fog-300" aria-hidden />
+            </span>
+            <p className="mb-1 text-[17px] font-semibold text-fog-100">No gear yet</p>
+            <p className="mb-5 max-w-[30ch] text-[14px] leading-relaxed text-fog-400">
+              Add what you travel with: grooming, chargers, documents. Every list reuses it.
             </p>
-            <div className="mx-auto max-w-[220px]">
-              <AddTravelItem variant="cta" onAdded={load} />
-            </div>
+            <AddTravelItem variant="cta" onAdded={load} />
           </div>
         ) : (
-          normalCategories.map((cat) => {
-            const catItems = byCategory[cat];
-            if (catItems.length === 0) return null;
-            const Icon = CATEGORY_ICONS[cat];
+          <>
+            <div className="-mx-4 flex gap-2 overflow-x-auto px-4 no-scrollbar" role="radiogroup" aria-label="Show">
+              <button type="button" role="radio" aria-checked={filter === 'all'} onClick={() => setFilter('all')} className="chip shrink-0">
+                All <span className="tabular-nums text-fog-400">{list.length}</span>
+              </button>
+              {GEAR_CATEGORIES.filter((c) => counts[c] > 0).map((c) => (
+                <button key={c} type="button" role="radio" aria-checked={filter === c} onClick={() => setFilter(c)} className="chip shrink-0">
+                  {c === 'misc' ? 'Other' : CATEGORY_LABELS[c]} <span className="tabular-nums text-fog-400">{counts[c]}</span>
+                </button>
+              ))}
+            </div>
 
-            return (
-              <section key={cat} aria-labelledby={`cat-${cat}`}>
-                <h2
-                  id={`cat-${cat}`}
-                  className="mb-2.5 flex items-center gap-1.5 px-1 text-[12px] font-semibold uppercase tracking-widest text-blue-300"
-                >
-                  <Icon size={14} aria-hidden="true" />
-                  {CATEGORY_LABELS[cat]}
-                  <span className="font-normal normal-case tabular-nums text-fog-500">({catItems.length})</span>
-                </h2>
-
-                <ul className="space-y-2" role="list">
-                  {catItems.map((item) => (
-                    <ItemRow key={item.id} item={item} onSelect={() => setSelected(item)} />
-                  ))}
-                </ul>
-              </section>
-            );
-          })
+            {shownCategories.map((cat) => {
+              const Icon = CATEGORY_ICONS[cat];
+              return (
+                <section key={cat} aria-labelledby={`cat-${cat}`}>
+                  <div className="mb-2 flex items-baseline justify-between px-1">
+                    <h2 id={`cat-${cat}`} className="section-title flex items-center gap-2">
+                      <Icon size={15} className="text-fog-300" aria-hidden />
+                      {cat === 'misc' ? 'Other' : CATEGORY_LABELS[cat]}
+                    </h2>
+                    <span className="section-meta">{counts[cat]}</span>
+                  </div>
+                  <ul className="group-list divide-y divide-white/[0.06]" role="list">
+                    {list.filter((i) => i.category === cat).map((item) => (
+                      <GearRow key={item.id} item={item} Icon={Icon} onSelect={() => setSelected(item)} />
+                    ))}
+                  </ul>
+                </section>
+              );
+            })}
+          </>
         )}
       </div>
 
-      <TravelItemSheet
-        item={selected}
-        onClose={() => setSelected(null)}
-        onDeleted={load}
-      />
+      <TravelItemSheet item={selected} onClose={() => setSelected(null)} onDeleted={load} />
     </>
   );
 }
 
-function ItemsSkeleton() {
-  return (
-    <div className="space-y-6" aria-hidden="true">
-      {[0, 1].map((s) => (
-        <section key={s}>
-          <div className="mb-2.5 h-3 w-24 rounded-full bg-ink-300" />
-          <ul className="space-y-2">
-            {[0, 1, 2].map((i) => (
-              <li key={i} className="skeleton h-[72px] rounded-[1.35rem]" />
-            ))}
-          </ul>
-        </section>
-      ))}
-    </div>
-  );
-}
-
-function ItemRow({ item, onSelect }: { item: TravelItem; onSelect: () => void }) {
+function GearRow({ item, Icon, onSelect }: { item: TravelItem; Icon: ElementType; onSelect: () => void }) {
   const display = getItemDisplay(item);
-  const tags = item.tags.slice(0, 3);
-  const showTags = !display.detail && tags.length > 0;
-  const FallbackIcon = CATEGORY_ICONS[item.category as NormalCategory] ?? PackageOpen;
+  const secondary = [display.brand, display.detail ?? display.line].filter(Boolean).join(' · ');
 
   return (
-    <li
-      role="button"
-      tabIndex={0}
-      onClick={onSelect}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(); } }}
-      aria-label={`${display.title}, view details`}
-      className={cn(
-        'cursor-pointer rounded-[1.35rem] border border-white/[0.055] bg-ink-200 px-3.5 py-2.5 shadow-card',
-        'transition-all duration-150 hover:bg-ink-300 active:scale-[0.98]',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400',
-      )}
-    >
-      <div className="flex items-center gap-3">
-        <div className="relative flex h-[52px] w-[52px] shrink-0 items-center justify-center overflow-hidden rounded-[1rem] bg-ink-300">
+    <li>
+      <button
+        type="button"
+        onClick={onSelect}
+        aria-label={`${display.title}${display.brand ? `, ${display.brand}` : ''}. Details`}
+        className="press flex min-h-[64px] w-full items-center gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-white/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"
+      >
+        <span className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-[14px] bg-white/[0.05]">
           {display.image ? (
-            <Image
-              src={display.image}
-              alt={item.name}
-              width={104}
-              height={104}
-              className="h-full w-full object-cover"
-            />
+            <Image src={display.image} alt="" width={96} height={96} className="h-full w-full object-cover" />
           ) : (
-            <FallbackIcon size={23} className="text-blue-300" aria-hidden="true" />
+            <Icon size={19} className="text-fog-400" aria-hidden />
           )}
-        </div>
-
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <p className="truncate text-[15px] font-semibold leading-5 text-fog-100">
-                {display.title}
-              </p>
-              {display.brand && (
-                <p className="mt-0.5 truncate text-[12px] font-semibold leading-4 text-blue-300/85">
-                  {display.brand}
-                </p>
-              )}
-            </div>
-            {item.warmth && (
-              <div className="mt-1 flex shrink-0 gap-0.5" aria-label={`Warmth ${item.warmth} of 5`}>
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className={`h-1.5 w-1.5 rounded-full ${i < item.warmth! ? 'bg-blue-400' : 'bg-ink-400'}`}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-
-          {display.line && (
-            <p className="mt-1 line-clamp-1 text-xs leading-4 text-fog-500">
-              {display.line}
-            </p>
-          )}
-          {display.detail && (
-            <p className="mt-0.5 line-clamp-1 text-[11px] leading-4 text-fog-500">
-              {display.detail}
-            </p>
-          )}
-          {showTags && (
-            <div className="mt-2 flex min-w-0 gap-1.5 overflow-hidden">
-              {tags.map((tag) => (
-                <span key={tag} className="max-w-[7rem] truncate rounded-full bg-ink-300 px-2 py-1 text-[11px] font-medium leading-none text-fog-500">
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-[15px] font-semibold leading-5 text-fog-100">{display.title}</span>
+          {secondary && <span className="mt-0.5 block truncate text-[12px] leading-4 text-fog-400">{secondary}</span>}
+        </span>
+        <ChevronRight size={16} className="shrink-0 text-fog-500" aria-hidden />
+      </button>
     </li>
   );
 }
