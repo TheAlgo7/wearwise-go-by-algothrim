@@ -156,7 +156,8 @@ export default function TripDetailPage() {
       if (cancelled || !loaded) return;
       const stored = loaded.trip.packing_reasoning?.split('\n').map((l) => l.trim()).filter(Boolean) ?? [];
       if (stored.length > 0) setNotes(stored.slice(0, 3));
-      if (loaded.rows.length === 0 && !autoBuilt.current) {
+      // Not for a trip already over: it would pack for today's weather.
+      if (loaded.rows.length === 0 && !autoBuilt.current && tripTiming(loaded.trip).phase !== 'past') {
         autoBuilt.current = true;
         void build();
       }
@@ -352,7 +353,9 @@ export default function TripDetailPage() {
       <div className="flex flex-col gap-5 px-4 pb-8">
         {error && <ErrorBanner message={error} onRetry={() => void (items.length === 0 ? build() : loadTrip())} />}
 
-        {building && total === 0 ? (
+        {timing.phase === 'past' && total === 0 && !building ? (
+          <PastTrip trip={trip} />
+        ) : building && total === 0 ? (
           <BuildingState />
         ) : total > 0 ? (
           <>
@@ -462,6 +465,8 @@ export default function TripDetailPage() {
         onClose={() => setMenuOpen(false)}
         tripId={trip.id}
         tripName={trip.name}
+        past={timing.phase === 'past'}
+        hasList={total > 0}
         building={building}
         onRebuild={() => { setMenuOpen(false); void build(); }}
         onDelete={deleteTrip}
@@ -504,6 +509,38 @@ function BuildingState() {
   );
 }
 
+/**
+ * A trip that is over and never had a list: one he went on before Go, added
+ * from his photos. What the photos showed, and a way to go again.
+ */
+function PastTrip({ trip }: { trip: Trip }) {
+  const lines = trip.packing_reasoning?.split('\n').map((l) => l.trim()).filter(Boolean) ?? [];
+  return (
+    <section className="flex flex-col gap-5">
+      {lines.length > 0 && (
+        <div>
+          <h2 className="section-title mb-2 px-1">From your photos</h2>
+          <ul className="group-list divide-y divide-white/[0.06]" role="list">
+            {lines.map((l) => (
+              <li key={l} className="px-4 py-3 text-[15px] leading-[1.45] text-fog-200 text-pretty">{l}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      <p className="px-1 text-[14px] leading-5 text-fog-400">
+        No list was kept for this one. Going again? Go builds it for the new dates.
+      </p>
+      <Link
+        href={`/trips/new?from=${trip.id}`}
+        className="press flex h-14 w-full items-center justify-center gap-2 rounded-full bg-blue-400 text-[16px] font-semibold text-ink-0 transition-colors hover:bg-blue-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-0"
+      >
+        <RotateCcw size={18} aria-hidden />
+        Plan it again
+      </Link>
+    </section>
+  );
+}
+
 function AllPacked({ total }: { total: number }) {
   return (
     <section aria-live="polite" className="flex flex-col items-center gap-3 px-6 py-10 text-center">
@@ -528,12 +565,14 @@ function ErrorBanner({ message, onRetry }: { message: string; onRetry: () => voi
 }
 
 function TripMenu({
-  open, onClose, tripId, tripName, building, onRebuild, onDelete,
+  open, onClose, tripId, tripName, past, hasList, building, onRebuild, onDelete,
 }: {
   open: boolean;
   onClose: () => void;
   tripId: string;
   tripName: string;
+  past: boolean;
+  hasList: boolean;
   building: boolean;
   onRebuild: () => void;
   onDelete: () => Promise<void>;
@@ -542,15 +581,18 @@ function TripMenu({
   return (
     <OneUISheet open={open} onClose={() => { setConfirm(false); onClose(); }} title="Trip options">
       <ul className="group-list divide-y divide-white/[0.06]" role="list">
-        <li>
-          <MenuRow
-            icon={<RefreshCw size={18} aria-hidden />}
-            title="Rebuild the list"
-            detail="Adds what today’s weather and route call for. Your ticks, notes and own items stay."
-            onClick={onRebuild}
-            disabled={building}
-          />
-        </li>
+        {/* Today's weather means nothing to a trip that is over. */}
+        {!past && (
+          <li>
+            <MenuRow
+              icon={<RefreshCw size={18} aria-hidden />}
+              title="Rebuild the list"
+              detail="Adds what today’s weather and route call for. Your ticks, notes and own items stay."
+              onClick={onRebuild}
+              disabled={building}
+            />
+          </li>
+        )}
         <li>
           <Link
             href={`/trips/new?from=${tripId}`}
@@ -559,7 +601,9 @@ function TripMenu({
             <span className="text-fog-300"><RotateCcw size={18} aria-hidden /></span>
             <span className="min-w-0">
               <span className="block text-[15px] font-semibold text-fog-100">Pack like this again</span>
-              <span className="block text-[12px] leading-4 text-fog-400">A new trip that starts from this list, all unticked</span>
+              <span className="block text-[12px] leading-4 text-fog-400">
+                {hasList ? 'A new trip that starts from this list, all unticked' : 'Same places and nights, new dates'}
+              </span>
             </span>
           </Link>
         </li>

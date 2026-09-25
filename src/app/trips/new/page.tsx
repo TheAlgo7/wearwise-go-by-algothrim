@@ -64,6 +64,8 @@ function NewTripForm() {
   const [carryOnOnly,    setCarryOnOnly]    = useState(false);
   const [isWork,         setIsWork]         = useState(false);
   const [source,         setSource]         = useState<Trip | null>(null);
+  // Trips added from photos have no list, so there is nothing to copy.
+  const [sourceHasList,  setSourceHasList]  = useState(false);
   const [loading,        setLoading]        = useState(false);
   const [error,          setError]          = useState('');
 
@@ -76,10 +78,15 @@ function NewTripForm() {
     if (!fromId) return;
     let active = true;
     (async () => {
-      const { data } = await createClient().from('trips').select('*').eq('id', fromId).single();
+      const supabase = createClient();
+      const [{ data }, { count }] = await Promise.all([
+        supabase.from('trips').select('*').eq('id', fromId).single(),
+        supabase.from('packing_lists').select('id', { count: 'exact', head: true }).eq('trip_id', fromId).eq('dismissed', false),
+      ]);
       if (!active || !data) return;
       const t = data as unknown as Trip;
       setSource(t);
+      setSourceHasList((count ?? 0) > 0);
       setTransport(t.transport);
       if (t.vehicle_profile) setVehicleProfile(t.vehicle_profile);
       setDestinations(t.destinations.map((d) => ({ ...d })));
@@ -182,7 +189,11 @@ function NewTripForm() {
           {source ? `Again: ${source.name}` : 'Where to?'}
         </h1>
         <p className="mt-1 px-1 text-[14px] text-fog-300">
-          {source ? 'Same route and list, new dates. Change anything below.' : 'Go builds the list from here.'}
+          {source
+            ? sourceHasList
+              ? 'Same route and list, new dates. Change anything below.'
+              : 'Same route, new dates. Go builds the list for them.'
+            : 'Go builds the list from here.'}
         </p>
       </header>
 
@@ -296,7 +307,7 @@ function NewTripForm() {
           className="press flex h-14 w-full items-center justify-center gap-2 rounded-full bg-blue-400 text-[16px] font-semibold text-ink-0 transition-colors hover:bg-blue-300 disabled:bg-white/[0.07] disabled:text-fog-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-0"
         >
           {loading && <Loader2 size={18} className="animate-spin" aria-hidden />}
-          {loading ? 'Creating' : source ? 'Copy the list' : 'Build my list'}
+          {loading ? 'Creating' : source && sourceHasList ? 'Copy the list' : 'Build my list'}
         </button>
       </form>
     </>

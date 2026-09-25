@@ -36,7 +36,12 @@ export function tripTiming(trip: Trip, now: Date = new Date()): TripTiming {
   const returnDate = new Date(dep);
   returnDate.setDate(returnDate.getDate() + nights);
 
-  const back = returnDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+  // Trips from an earlier year carry it, or "Back 4 Nov" reads as last month.
+  const back = returnDate.toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: returnDate.getFullYear() === today.getFullYear() ? undefined : 'numeric',
+  });
 
   if (daysUntil > 1) return { phase: 'upcoming', daysUntil, nights, day: null, label: `in ${daysUntil} days`, returnDate };
   if (daysUntil === 1) return { phase: 'tomorrow', daysUntil, nights, day: null, label: 'tomorrow', returnDate };
