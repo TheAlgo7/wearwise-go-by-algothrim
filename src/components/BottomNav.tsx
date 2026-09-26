@@ -29,10 +29,14 @@ export function BottomNav() {
     () => false,
   );
   const glassRef = useRef<HTMLDivElement>(null);
-  useLiquidGlass(glassRef, 'go-nav-glass');
+  const hidden = pathname.startsWith('/unlock');
+  useLiquidGlass(glassRef, 'go-nav-glass', !hidden);
 
   const currentPath = mounted ? pathname : '';
   const newTripActive = currentPath === '/trips/new';
+
+  // The lock screen is chrome-free.
+  if (hidden) return null;
 
   return (
     <nav

@@ -55,6 +55,7 @@ The list is built in code, the same way every time. A model only writes a few no
 - **Rebuild without losing anything.** A rebuild merges: ticks, notes and items you added by hand stay; engine rows that no longer apply go only if they are not packed.
 - **Pack it again.** Start a new trip from an old list, all unticked, or plan a past trip again with new dates.
 - **Offline.** An installable PWA that keeps working without signal once a list is loaded.
+- **Locked.** The same four-digit PIN as the Wardrobe, entered once per device.
 
 ## How it works
 
@@ -106,9 +107,10 @@ GROQ_API_KEY=
 GEMINI_API_KEY=
 OPENROUTER_API_KEY=
 NEXT_PUBLIC_DEFAULT_CITY=New Delhi,IN
+APP_PIN=
 ```
 
-Then run `supabase/schema.sql` and `supabase/seed.sql` in the Supabase SQL editor. Clothing needs the Wardrobe's `items` table in the same project.
+Leave `APP_PIN` empty and the lock is off. Then run `supabase/schema.sql` and `supabase/seed.sql` in the Supabase SQL editor. Clothing needs the Wardrobe's `items` table in the same project.
 
 | Command | What it does |
 |---|---|
@@ -122,9 +124,10 @@ Then run `supabase/schema.sql` and `supabase/seed.sql` in the Supabase SQL edito
 ```text
 src/
   app/            Trips, New trip, a trip and its list, Gear
-  app/api/        pack, notes, weather, keepalive
+  app/api/        pack, notes, weather, unlock, keepalive
   components/     destination input, packing groups, item sheets, One UI controls
-  lib/            packing engine, trip timing, vehicles, weather, prompts, LLM chain
+  lib/            packing engine, trip timing, vehicles, weather, prompts, LLM chain, PIN
+  proxy.ts        the PIN gate
 supabase/         schema and seed
 scripts/          README screenshots
 ```

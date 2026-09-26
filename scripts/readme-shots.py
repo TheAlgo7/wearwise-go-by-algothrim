@@ -3,7 +3,7 @@
   python scripts/readme-shots.py            # against production
   BASE=http://localhost:3000 python scripts/readme-shots.py
 
-Needs Python with Playwright and Chrome. It plans a demo trip (Goa, four nights,
+Needs Python with Playwright and Chrome, and APP_PIN in the environment or .env.local. It plans a demo trip (Goa, four nights,
 by air, three weeks out) through the real form, captures the list Go builds for
 it, then deletes the trip again. Past trips are hidden from the pictures, and Gear
 is shown on its Electronics shelf. Writes docs/readme/{trips,trip,list,new,gear,hero}.png.
@@ -16,6 +16,7 @@ BASE = os.environ.get('BASE', 'https://wearwise-go-by-algothrim.vercel.app')
 OUT = Path('docs/readme')
 OUT.mkdir(parents=True, exist_ok=True)
 UA = 'Mozilla/5.0 (Linux; Android 16; SM-S928B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Mobile Safari/537.36'
+PIN = os.environ.get('APP_PIN') or re.search(r'^APP_PIN=(.*)$', Path('.env.local').read_text(), re.M).group(1).strip().strip('"')
 LEAVE = (dt.date.today() + dt.timedelta(days=21)).isoformat()
 
 # SamsungOne is the S24's system font; Chrome on Windows cannot match the installed copy by name.
@@ -37,6 +38,8 @@ with sync_playwright() as p:
         ctx.route('**/__readme/*.ttf', lambda r: r.fulfill(body=FACES[int(r.request.url.split('-')[-1][:3])].read_bytes(), content_type='font/ttf'))
         ctx.add_init_script(INJECT)
     page = ctx.new_page()
+    page.goto(BASE + '/unlock')
+    assert page.request.post(BASE + '/api/unlock', data={'pin': PIN}).ok, 'unlock failed'
     trip_url = None
     try:
         page.goto(BASE + '/trips/new')
