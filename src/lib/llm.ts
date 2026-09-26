@@ -6,7 +6,12 @@
  * cannot hang: the old chain had no timeout on any rung, pointed at a paid-only
  * OpenRouter slug and a retired Gemini model, and could keep the request open
  * until the platform killed it. Every rung now has its own timeout under one
- * shared deadline, mirroring the Wardrobe's chain (verified slugs, 2026-08).
+ * shared deadline, mirroring the Wardrobe's chain.
+ *
+ * Slugs re-verified 2026-09-27: Groq retired every Llama model (the old first
+ * rung returned 404 on every call) and OpenRouter dropped gpt-oss-20b:free.
+ * Groq's chat models are now gpt-oss-120b, gpt-oss-20b and qwen3.8-27b, all at
+ * 8,000 tokens a minute, which is plenty for three short notes.
  */
 
 export interface LLMMessage {
@@ -19,10 +24,10 @@ type Rung =
   | { provider: 'gemini'; model: string };
 
 const CHAIN: Rung[] = [
-  { provider: 'groq', model: 'llama-3.3-70b-versatile' },
+  { provider: 'groq', model: 'qwen/qwen3.8-27b' },
   { provider: 'gemini', model: 'gemini-flash-lite-latest' },
   { provider: 'gemini', model: 'gemini-2.5-flash' },
-  { provider: 'openrouter', model: 'openai/gpt-oss-20b:free' },
+  { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free' },
 ];
 
 const RUNG_TIMEOUT_MS = 12_000;
