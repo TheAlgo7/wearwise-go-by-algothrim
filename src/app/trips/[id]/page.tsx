@@ -321,9 +321,11 @@ export default function TripDetailPage() {
         <h1 className="mt-2 px-1 text-[28px] font-semibold leading-[1.15] tracking-tight text-fog-100 text-balance">{trip.name}</h1>
         <p className="mt-1 px-1 text-[14px] text-fog-300">
           {/* The state the weather came from, so a wrong match ("Manali" in
-              Tamil Nadu) is visible rather than silently packed for. */}
+              Tamil Nadu) is visible rather than silently packed for. Skipped
+              when the state has the place's own name, so Goa is not "Goa, Goa". */}
           {placeNames(trip)}
-          {singleStop && trip.weather?.[0]?.region ? `, ${trip.weather[0].region}` : ''}
+          {singleStop && trip.weather?.[0]?.region && trip.weather[0].region.toLowerCase() !== placeNames(trip).toLowerCase()
+            ? `, ${trip.weather[0].region}` : ''}
           {' · '}{timing.nights} night{timing.nights !== 1 ? 's' : ''} · {TRANSPORT_LABELS[trip.transport]}
           {trip.is_work ? ' · Work' : ''}
         </p>
