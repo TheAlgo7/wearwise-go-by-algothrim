@@ -1,91 +1,96 @@
-<div align="center">
+<p align="center">
+  <img src="docs/readme/hero.png" alt="WearWise Go: pack like you already remembered everything" width="100%">
+</p>
 
-# WearWise Go
+<p align="center">
+  <strong>A packing list built from the weather, the route and the clothes you actually own.</strong><br>
+  Say where you are going and how, and Go writes the list, down to the smaller sunscreen that fits a cabin bag.
+</p>
 
-### *Pack like you already remembered everything.*
+<p align="center">
+  <a href="#features">Features</a>
+  &nbsp;·&nbsp;
+  <a href="#how-it-works">How it works</a>
+  &nbsp;·&nbsp;
+  <a href="#run-it-locally">Run it locally</a>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/TheAlgo7/wearwise-by-algothrim">WearWise Wardrobe</a>
+</p>
 
-[![Next.js](https://img.shields.io/badge/Next.js-16-6B9FED?style=flat-square&logo=nextdotjs&logoColor=white&labelColor=111111)](https://nextjs.org)
-[![TypeScript](https://img.shields.io/badge/TypeScript-6B9FED?style=flat-square&logo=typescript&logoColor=white&labelColor=111111)](https://www.typescriptlang.org)
-[![Supabase](https://img.shields.io/badge/Supabase-6B9FED?style=flat-square&logo=supabase&logoColor=white&labelColor=111111)](https://supabase.com)
-[![PWA](https://img.shields.io/badge/PWA-Installable-6B9FED?style=flat-square&labelColor=111111)](https://github.com/TheAlgo7/wearwise-go-by-algothrim)
-[![AI](https://img.shields.io/badge/AI-Gemini%20·%20Groq%20·%20OpenRouter-6B9FED?style=flat-square&labelColor=111111)](https://github.com/TheAlgo7/wearwise-go-by-algothrim)
+<p align="center">
+  <img alt="Next.js 16" src="https://img.shields.io/badge/Next.js-16-6B9FED?style=flat-square&labelColor=111111">
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-6B9FED?style=flat-square&labelColor=111111">
+  <img alt="Supabase" src="https://img.shields.io/badge/Supabase-Postgres-6B9FED?style=flat-square&labelColor=111111">
+  <img alt="Installable PWA" src="https://img.shields.io/badge/PWA-installable-6B9FED?style=flat-square&labelColor=111111">
+</p>
 
-</div>
+## Why Go
 
-## Why This Exists
+Every trip starts from zero. The same mental checklist, the same things forgotten, the same over-packing, and the one item you needed still on the bathroom shelf.
 
-Every time you pack for a trip you start from zero. You check the same mental list, forget the same things, over-pack the same way, and arrive somewhere realising the one item you needed most is sitting on your bathroom shelf.
+Go is the travel half of [WearWise](https://github.com/TheAlgo7/wearwise-by-algothrim). It reads the same wardrobe, so a list says "Cobalt Blue Shirt" and "White Jeans", not "T-shirts x4". It checks the weather at every stop, knows a flight means a cabin bag and a road trip means the car, and keeps the list short enough to trust.
 
-WearWise Go is built to end that. It knows the trip — where you're going, how you're getting there, how many nights, whether it's work or leisure, whether you're carry-on only. It generates a packing list from that context, tuned by AI to the specific conditions of that trip. Weather is fetched automatically. Liquids limits are enforced if you're flying carry-on. Formal wear is added if you marked it a work trip.
+The list is built in code, the same way every time. A model only writes a few notes about it afterwards.
 
-**This is a companion app to [WearWise Wardrobe](https://github.com/TheAlgo7/wearwise-by-algothrim).** Same design language, same stack, same owner. One tells you what to wear. This one tells you what to bring.
+## Screenshots
 
-## How The Engine Works
-
-**Stage 1 — The Trip**
-User creates a trip with destinations, nights, vibe tags, and transport mode. Carry-on only and work trip flags adjust the generation rules before anything runs.
-
-**Stage 2 — The Context**
-Live weather is fetched for each destination at generation time and injected into the prompt — so suggestions are accurate to actual conditions, not generalised seasonal advice.
-
-**Stage 3 — The List**
-A deterministic packing engine builds the base list from trip context. AI (Groq → OpenRouter → Gemini fallback) then reviews it, tunes it, and surfaces the most critical items first.
-
-The LLM is the last mile, not the whole pipeline. Filtering and context assembly happen in code so the model gets a tight, relevant brief instead of a raw dump of rules.
+<table>
+  <tr>
+    <td align="center"><img src="docs/readme/trips.png" width="160" alt="Trips"><br><sub>The next trip, counting down</sub></td>
+    <td align="center"><img src="docs/readme/new.png" width="160" alt="Planning a trip"><br><sub>Where, when and how</sub></td>
+    <td align="center"><img src="docs/readme/trip.png" width="160" alt="A trip"><br><sub>Weather, notes, what not to forget</sub></td>
+    <td align="center"><img src="docs/readme/list.png" width="160" alt="The clothing list"><br><sub>Real clothes from the wardrobe</sub></td>
+    <td align="center"><img src="docs/readme/gear.png" width="160" alt="Gear"><br><sub>Everything else Go can pack</sub></td>
+  </tr>
+</table>
 
 ## Features
 
-- **Context-aware packing lists** generated from trip details, not generic templates.
-- **Multi-destination support** — multiple stops with individual night counts and vibes.
-- **Weather-aware generation** — live conditions fetched at list creation time.
-- **Carry-on mode** — enforces 100ml liquids rule and tight space constraints.
-- **Work trip mode** — adds laptop, cables, and business documents automatically.
-- **Pack progress tracking** — check items off as you go, persisted per trip.
-- **Critical item surfacing** — passport-level items always appear first.
-- **Urgency banner** — when departure is 0–1 days away, the most critical items surface at the top.
-- **Offline-ready PWA** — installs to home screen, works without a connection after first load.
+- **Your clothes, not categories.** Clothing comes from the WearWise wardrobe: the weather decides what is possible, formality decides what is right, and colour variety decides what makes the cut, so four nights is not four black tees.
+- **One product per kind.** If you own two sunscreens, the smaller bottle travels. A generic "Face wash" row drops out when a real face wash exists.
+- **Don't forget means it.** About five things a trip genuinely fails without, not twenty-two.
+- **Pack last.** Toothbrush, charger and whatever you use that morning get their own group.
+- **Right for the route.** A flight flags liquids over 100 ml and fits a cabin bag. A road trip knows the car. Passport, visa, adapter and insurance only appear when a stop is outside India.
+- **Multi-stop trips.** Each stop has its own nights, its own kind of place and its own weather.
+- **Rebuild without losing anything.** A rebuild merges: ticks, notes and items you added by hand stay; engine rows that no longer apply go only if they are not packed.
+- **Pack it again.** Start a new trip from an old list, all unticked, or plan a past trip again with new dates.
+- **Offline.** An installable PWA that keeps working without signal once a list is loaded.
 
-## Install to Home Screen
+## How it works
 
-**Android (Chrome):**
-1. Open the app in Chrome
-2. Tap the **⋮** menu → **Add to Home screen**
-3. Tap **Add** — WearWise Go installs like a native app
+```mermaid
+flowchart LR
+  form["New trip"] --> pack["/api/pack"]
+  pack --> wx["OpenWeather<br/>per stop"]
+  pack --> engine["Packing engine<br/>packing-engine.ts"]
+  wardrobe[("Wardrobe items")] --> engine
+  gear[("Travel items")] --> engine
+  engine -- "merge" --> list[("Packing list")]
+  list --> notes["/api/notes<br/>up to 3 notes"]
+```
 
-**iOS (Safari):**
-1. Open the app in Safari
-2. Tap the **Share** button → **Add to Home Screen**
-3. Tap **Add** — the app appears on your home screen
+- **Deterministic first.** `buildPackingList` is a plain function of the trip, the weather, the wardrobe and the gear. The same trip always gets the same list, and the list appears as soon as the engine has built it.
+- **Notes second.** `/api/notes` asks a model for at most three plain lines about the finished list, through a timed chain of Groq, Gemini and OpenRouter. If every provider fails, the list is still complete.
+- **Places resolve before the weather.** A city is geocoded first, with aliases for regions (Goa becomes Panaji), so "Manali" is the hill town, not a suburb of Chennai.
+- **Shared database, separate app.** Go reads the Wardrobe's `items` table and keeps its own `trips`, `packing_lists` and `travel_items`.
 
-## Stack
+## Built with
 
-| Layer | Technology |
-| --- | --- |
-| Framework | Next.js 16 App Router + React 19 |
-| Language | TypeScript |
-| Styling | Tailwind CSS — Samsung One UI-inspired direction |
-| Data | Supabase Postgres |
-| AI | Gemini, Groq, OpenRouter |
-| Weather | OpenWeather API |
-| Hosting | Vercel |
-| PWA | Custom service worker, Web App Manifest |
+| Layer | Choice |
+|---|---|
+| App | Next.js 16 App Router, React 19, TypeScript |
+| Styling | Tailwind CSS on OKLCH tokens, shared with WearWise Wardrobe |
+| Data | Supabase Postgres, the same project as the Wardrobe |
+| Weather | OpenWeather current conditions and geocoding |
+| Notes | Groq, Google Gemini, OpenRouter |
+| Hosting | Vercel, with a daily keep-alive cron for the free database |
 
-## Design Language
+## Run it locally
 
-- **AMOLED-first.** Pure blacks, cornflower blue accents, soft copper for urgency states.
-- **Samsung-inspired UI.** Rounded, touch-forward, comfortable at arm's length on a phone screen.
-- **Shared system with WearWise Wardrobe.** Same tokens, same components, same typographic scale — one cohesive product family.
-- **Built for the moment of packing.** Every screen is optimised for one task: getting out the door without forgetting anything.
-
-## Security Note
-
-Supabase RLS is intentionally open for V1 — this is a single-user personal tool with no public auth. If you fork this for your own use, tighten row-level security before exposing it to other users or storing sensitive data.
-
-<details>
-<summary>Quick Start</summary>
+You need Node 20 or newer and a Supabase project.
 
 ```bash
-git clone https://github.com/TheAlgo7/wearwise-go-by-algothrim
+git clone https://github.com/TheAlgo7/wearwise-go-by-algothrim.git
 cd wearwise-go-by-algothrim
 npm install
 npm run dev
@@ -96,33 +101,36 @@ Create `.env.local`:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
 OPENWEATHER_API_KEY=
-GEMINI_API_KEY=
 GROQ_API_KEY=
+GEMINI_API_KEY=
 OPENROUTER_API_KEY=
 NEXT_PUBLIC_DEFAULT_CITY=New Delhi,IN
 ```
 
-Initialize the database:
+Then run `supabase/schema.sql` and `supabase/seed.sql` in the Supabase SQL editor. Clothing needs the Wardrobe's `items` table in the same project.
 
-```bash
-# Run in Supabase SQL editor
-supabase/schema.sql
-supabase/seed.sql
+| Command | What it does |
+|---|---|
+| `npm run build` | Production build |
+| `npm run lint` | ESLint |
+| `npm run type-check` | TypeScript, no emit |
+| `python scripts/readme-shots.py` | Rebuilds the screenshots in this README from the live app, using a demo trip it deletes afterwards |
+
+## Project structure
+
+```text
+src/
+  app/            Trips, New trip, a trip and its list, Gear
+  app/api/        pack, notes, weather, keepalive
+  components/     destination input, packing groups, item sheets, One UI controls
+  lib/            packing engine, trip timing, vehicles, weather, prompts, LLM chain
+supabase/         schema and seed
+scripts/          README screenshots
 ```
 
-```bash
-npm run build
-npm run start
-npm run lint
-npm run type-check
-```
+## Licence
 
-</details>
+Copyright © 2026 Gaurav Kumar, [The Algothrim](https://thealgothrim.com). All rights reserved.
 
-<div align="center">
-
-Built for **real trips, real context, and nothing left behind** by **[The Algothrim](https://thealgothrim.com)**
-
-</div>
+The code is public to read and learn from. It is not licensed for reuse.
