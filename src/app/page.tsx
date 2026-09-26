@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Bus, Car, ChevronRight, Plane, Plus, RotateCcw, Train } from 'lucide-react';
+import { useToday } from '@/hooks/useToday';
 import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/cn';
 import { isActive, placeNames, tripLight, tripTiming, weatherIcon, type TripTiming } from '@/lib/trip-time';
@@ -86,7 +87,7 @@ export default function HomePage() {
   }, [trips]);
 
   const loading = trips === null;
-  const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
+  const today = useToday();
 
   const headline = !next
     ? 'Nowhere booked.'
@@ -105,7 +106,7 @@ export default function HomePage() {
   return (
     <main className="min-h-dvh">
       <header className="px-5 pb-5 pt-12">
-        <p suppressHydrationWarning className="mb-1.5 text-[13px] font-medium text-fog-400">{today}</p>
+        <p className="mb-1.5 text-[13px] font-medium text-fog-400">{today || ' '}</p>
         {loading ? (
           <div className="h-9 w-56 animate-pulse rounded-full bg-white/[0.06]" />
         ) : (
