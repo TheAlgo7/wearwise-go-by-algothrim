@@ -6,7 +6,14 @@ Dark, AMOLED black canvas, night-blue surfaces. The physical scene is packing th
 
 Colour strategy: **Restrained**. Blue-tinted neutrals everywhere; the cornflower accent (`#6B9FED`) marks the one primary action on a screen, the progress bar, ticks, focus, and nothing decorative. Copper (`amber-*`, rendered copper) means time pressure only: leaving today or tomorrow, and the "Don't forget" group.
 
-Shared vocabulary with WearWise Wardrobe (September 2026 pass): same OKLCH method, same neutral selection state, same photo plates, same liquid-glass nav. Wardrobe is crimson on warm ink; Go is blue on cold ink.
+Shared vocabulary with WearWise Wardrobe (September 2026 pass): same OKLCH method, same neutral selection state, same liquid-glass nav. Wardrobe is crimson on warm ink; Go is blue on cold ink.
+
+**November 2026, "Lights down" (with Wardrobe; brief in the Wardrobe repo's `docs/revamp-brief.md`):**
+
+- **No photo plates.** `.photo-well` is transparent and wardrobe photos are `screen`-blended, so their black dissolves into whatever is behind them. Blend an animating wrapper (`.garment`), never the `<img>` inside it.
+- **Hairline groups, not filled cards.** `.go-card` and `.group-list` are a 1px white/8% frame with the faintest lift; chips, fields, the segmented control, secondary buttons and the sheet close button are outlined in fog. Only the one primary action per screen is solid blue. Floating things (toasts, the install prompt) keep a fill so they stay readable.
+- **Two families.** Archivo (`--font-display`, `wdth 112`, weight 620) for moments only: `.type-greeting` on Trips, `.type-title` on Gear, New trip and a trip's name. The system stack for every label, button and body line.
+- **Icon:** the folded-W suitcase with the paper-plane arrow (approved 21 Oct 2026, `Work\Ongoing Apps Assets\WearWise\Logos`), with separate `any` and `maskable` icons in `public/` and `public/icons/`.
 
 ### Where blue is allowed
 

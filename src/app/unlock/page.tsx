@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/cn';
 import { Delete } from 'lucide-react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -75,14 +76,16 @@ export default function UnlockPage() {
   if (welcome) {
     return (
       <main className="flex min-h-dvh flex-col items-center justify-center gap-2">
-        <p className="text-[26px] font-semibold text-fog-100">Welcome back</p>
+        <p className="type-greeting">Welcome back</p>
       </main>
     );
   }
 
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center px-8 pb-10">
-      <p className="text-[15px] font-semibold uppercase tracking-[0.32em] text-fog-100">WearWise Go</p>
+      {/* The app's own mark, then its name. Icons are outside the PIN gate (proxy.ts). */}
+      <Image src="/icon-192.png" alt="" width={72} height={72} priority className="rounded-[22px] ring-1 ring-white/[0.08]" />
+      <h1 className="type-display mt-5 text-[28px] leading-none text-fog-100">WearWise Go</h1>
 
       <p className="mt-3 text-[15px] text-fog-300" aria-live="polite">
         {error ? 'That is not it. Try again.' : 'Enter your PIN'}
@@ -122,7 +125,7 @@ export default function UnlockPage() {
               type="button"
               onClick={() => push(k)}
               disabled={busy}
-              className="press mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/[0.05] text-[24px] font-medium text-fog-100 transition-colors active:bg-blue-400/20 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+              className="press mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-white/[0.10] text-[25px] font-normal text-fog-100 transition-colors active:border-blue-400/60 active:bg-blue-400/15 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
             >
               {k}
             </button>

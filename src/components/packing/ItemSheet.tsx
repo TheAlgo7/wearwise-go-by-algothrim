@@ -122,7 +122,7 @@ function ItemForm({ item, onSave, onRemove, onClose }: { item: PackingItem } & O
         />
       </label>
 
-      <div className="flex min-h-[56px] items-center justify-between gap-4 rounded-[1.25rem] bg-white/[0.04] px-4">
+      <div className="flex min-h-[56px] items-center justify-between gap-4 rounded-[1.25rem] border border-white/[0.08] px-4">
         <span className="min-w-0">
           <span className="block text-[15px] font-semibold text-fog-100">Pack last</span>
           <span className="block text-[12px] text-fog-400">You still use it the morning you leave</span>
@@ -155,7 +155,7 @@ function ItemForm({ item, onSave, onRemove, onClose }: { item: PackingItem } & O
           type="button"
           onClick={() => void remove()}
           disabled={busy}
-          className={`press flex h-14 shrink-0 items-center justify-center gap-2 rounded-full px-5 text-[15px] font-semibold transition-colors ${confirmRemove ? 'bg-red-500/20 text-red-300' : 'bg-white/[0.06] text-fog-200 hover:bg-white/[0.1]'}`}
+          className={`press flex h-14 shrink-0 items-center justify-center gap-2 rounded-full px-5 text-[15px] font-semibold transition-colors ${confirmRemove ? 'bg-red-500/20 text-red-300' : 'border border-white/[0.12] text-fog-200 hover:border-white/[0.2]'}`}
         >
           <Trash2 size={16} aria-hidden />
           {confirmRemove ? 'Tap to confirm' : 'Remove'}

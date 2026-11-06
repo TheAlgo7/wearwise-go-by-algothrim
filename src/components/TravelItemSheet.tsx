@@ -58,7 +58,7 @@ export function TravelItemSheet({ item, onClose, onDeleted }: Props) {
     <OneUISheet open onClose={close} title="Gear">
       <div className="space-y-5">
         <div className="flex items-center gap-4">
-          <div className="relative flex h-[72px] w-[72px] shrink-0 items-center justify-center overflow-hidden rounded-[1.2rem] bg-ink-300">
+          <div className="relative flex h-[72px] w-[72px] shrink-0 items-center justify-center overflow-hidden rounded-[1.2rem] border border-white/[0.10]">
             {display.image ? (
               <Image src={display.image} alt={item.name} width={144} height={144} className="h-full w-full object-cover" />
             ) : (
@@ -81,18 +81,18 @@ export function TravelItemSheet({ item, onClose, onDeleted }: Props) {
             {CATEGORY_LABELS[item.category]}
           </span>
           {item.layer && (
-            <span className="rounded-full bg-ink-300 px-3 py-1.5 text-[12px] font-medium text-fog-300">
+            <span className="rounded-full border border-white/[0.10] px-3 py-1.5 text-[12px] font-medium text-fog-300">
               {LAYER_LABELS[item.layer] ?? item.layer}
             </span>
           )}
           {item.size_ml != null && (
-            <span className="flex items-center gap-1 rounded-full bg-ink-300 px-3 py-1.5 text-[12px] font-medium text-fog-300">
+            <span className="flex items-center gap-1 rounded-full border border-white/[0.10] px-3 py-1.5 text-[12px] font-medium text-fog-300">
               <Droplets size={12} aria-hidden="true" />
               {item.size_ml} ml
             </span>
           )}
           {item.tags.map((tag) => (
-            <span key={tag} className="rounded-full bg-ink-300 px-3 py-1.5 text-[12px] font-medium text-fog-500">
+            <span key={tag} className="rounded-full border border-white/[0.10] px-3 py-1.5 text-[12px] font-medium text-fog-500">
               {tag}
             </span>
           ))}

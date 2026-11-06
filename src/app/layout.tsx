@@ -1,8 +1,20 @@
 import type { Metadata, Viewport } from 'next';
+import { Archivo } from 'next/font/google';
 import './globals.css';
 import { BottomNav } from '@/components/BottomNav';
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
 import { InstallPrompt } from '@/components/InstallPrompt';
+
+/**
+ * Display face for moments only (greeting, page titles, a trip's name), shared
+ * with WearWise Wardrobe. Everything else stays on the system stack.
+ */
+const display = Archivo({
+  subsets: ['latin'],
+  axes: ['wdth'],
+  variable: '--font-display',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://wearwise-go-by-algothrim.vercel.app'),
@@ -58,7 +70,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className={`${display.variable} h-full`}>
       <body className="h-full bg-ink-0 text-fog-100 font-sans antialiased overflow-x-hidden">
         <ServiceWorkerRegister />
         <main className="mx-auto max-w-xl min-h-dvh pb-nav">{children}</main>

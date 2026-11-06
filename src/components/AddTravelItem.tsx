@@ -79,7 +79,7 @@ export function AddTravelItem({ variant = 'header', onAdded }: Props) {
           type="button"
           onClick={openSheet}
           aria-label="Add gear"
-          className="press flex h-11 items-center gap-1.5 rounded-full bg-white/[0.08] pl-3 pr-4 text-[14px] font-semibold text-fog-100 transition-colors hover:bg-white/[0.12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+          className="press flex h-11 items-center gap-1.5 rounded-full border border-white/[0.12] pl-3 pr-4 text-[14px] font-semibold text-fog-100 transition-colors hover:border-white/[0.2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
         >
           <Plus size={17} strokeWidth={2.4} aria-hidden />
           Add

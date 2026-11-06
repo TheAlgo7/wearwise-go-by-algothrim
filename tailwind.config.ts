@@ -69,6 +69,8 @@ const config: Config = {
       fontFamily: {
         sans: ['SamsungOne', 'SamsungSharpSans', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
         mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+        // Moments only (see layout.tsx). Never on labels, buttons or data.
+        display: ['var(--font-display)', 'SamsungOne', '-apple-system', 'system-ui', 'sans-serif'],
       },
       // Shared with WearWise Wardrobe
       fontSize: {

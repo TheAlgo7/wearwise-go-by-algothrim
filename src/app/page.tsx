@@ -110,7 +110,7 @@ export default function HomePage() {
         {loading ? (
           <div className="h-9 w-56 animate-pulse rounded-full bg-white/[0.06]" />
         ) : (
-          <h1 className="text-[30px] font-semibold leading-[1.15] tracking-tight text-fog-100 text-balance">
+          <h1 className="type-greeting text-balance">
             {headline}
           </h1>
         )}

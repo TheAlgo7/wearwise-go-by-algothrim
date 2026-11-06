@@ -185,7 +185,7 @@ function NewTripForm() {
         >
           <ArrowLeft size={21} aria-hidden />
         </Link>
-        <h1 className="mt-2 px-1 text-[28px] font-semibold leading-[1.15] tracking-tight text-fog-100">
+        <h1 className="mt-2 px-1 type-title">
           {source ? `Again: ${source.name}` : 'Where to?'}
         </h1>
         <p className="mt-1 px-1 text-[14px] text-fog-300">
@@ -239,7 +239,7 @@ function NewTripForm() {
                   // app; the blue is only the icon, marking which one.
                   transport === mode
                     ? 'border-white/[0.16] bg-ink-500 text-fog-100 shadow-[0_1px_0_rgb(255_255_255/0.07)_inset]'
-                    : 'border-white/[0.06] bg-ink-200 text-fog-300 hover:bg-ink-300',
+                    : 'border-white/[0.10] bg-transparent text-fog-300 hover:border-white/[0.18]',
                 )}
               >
                 <Icon size={19} aria-hidden className={transport === mode ? 'text-blue-300' : 'text-fog-400'} />
@@ -324,7 +324,7 @@ function ToggleRow({
   onChange: (checked: boolean) => void;
 }) {
   return (
-    <div className="flex min-h-[68px] items-center justify-between gap-4 rounded-[1.35rem] border border-white/[0.06] bg-ink-200 px-4 py-3">
+    <div className="flex min-h-[68px] items-center justify-between gap-4 rounded-[1.35rem] border border-white/[0.10] bg-transparent px-4 py-3">
       <div className="flex min-w-0 items-center gap-3">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-fog-300">{icon}</span>
         <div className="min-w-0">

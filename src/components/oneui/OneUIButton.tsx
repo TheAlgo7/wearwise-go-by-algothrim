@@ -26,8 +26,9 @@ export const OneUIButton = forwardRef<HTMLButtonElement, OneUIButtonProps>(
           size === 'lg' && 'h-14 px-8 text-base rounded-oneui-lg gap-2',
           // variant
           variant === 'primary'   && 'bg-blue-400 text-ink-0 hover:bg-blue-500 active:bg-blue-600',
-          variant === 'secondary' && 'bg-ink-200 text-fog-100 hover:bg-ink-300 active:bg-ink-400',
-          variant === 'ghost'     && 'bg-transparent text-blue-300 hover:bg-blue-400/10 active:bg-blue-400/20',
+          // Revamp: anything that is not the primary action is outlined in fog.
+          variant === 'secondary' && 'border border-white/[0.12] bg-transparent text-fog-100 hover:border-white/[0.2] hover:bg-white/[0.04]',
+          variant === 'ghost'     && 'bg-transparent text-fog-200 hover:bg-white/[0.06] hover:text-fog-100',
           variant === 'danger'    && 'bg-red-600/20 text-red-400 hover:bg-red-600/30 active:bg-red-600/40',
           className,
         )}

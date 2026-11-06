@@ -318,7 +318,7 @@ export default function TripDetailPage() {
           </button>
         </div>
 
-        <h1 className="mt-2 px-1 text-[28px] font-semibold leading-[1.15] tracking-tight text-fog-100 text-balance">{trip.name}</h1>
+        <h1 className="mt-2 px-1 type-title text-balance">{trip.name}</h1>
         <p className="mt-1 px-1 text-[14px] text-fog-300">
           {/* The state the weather came from, so a wrong match ("Manali" in
               Tamil Nadu) is visible rather than silently packed for. Skipped

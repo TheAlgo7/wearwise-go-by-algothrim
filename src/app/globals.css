@@ -58,16 +58,33 @@
 }
 
 @layer components {
-  /* Standard card surface */
+  /* A group that is genuinely a group. Revamp ("Lights down", Nov 2026, same
+     system as WearWise Wardrobe): a hairline and the faintest lift instead of
+     a filled navy box. On the black canvas the filled cards were the loudest
+     thing on every screen. */
   .go-card {
-    @apply bg-ink-200 border border-white/[0.06] rounded-[1.65rem];
+    @apply rounded-[1.65rem] border border-white/[0.08] bg-white/[0.025];
   }
 
-  /* One UI grouped list: one surface, rows separated by hairlines. Used for
+  /* Grouped list: one hairline frame, rows separated by hairlines. Used for
      packing sections and the Gear page instead of a card per item. */
   .group-list {
-    @apply overflow-hidden rounded-[1.5rem] border border-white/[0.06] bg-ink-200;
+    @apply overflow-hidden rounded-[1.5rem] border border-white/[0.08] bg-white/[0.02];
   }
+
+  /* Display type: moments only (greeting, page titles, a trip's name).
+     Archivo, opened up slightly on its width axis. Labels never use it. */
+  .type-display {
+    font-family: var(--font-display), 'SamsungOne', -apple-system, system-ui, sans-serif;
+    font-variation-settings: 'wdth' 112;
+    font-weight: 620;
+    letter-spacing: -0.025em;
+  }
+  .type-greeting { @apply type-display text-[31px] leading-[1.06] text-fog-100; }
+  .type-title    { @apply type-display text-[28px] leading-[1.1] text-fog-100; }
+
+  /* A photo whose wrapper animates: blend the wrapper, not the <img>. */
+  .garment { mix-blend-mode: screen; }
 
   /* Section heading. Sentence case, fog white. No uppercase tracked blue
      eyebrows: they restated what the screen already said and spent the
@@ -94,7 +111,7 @@
      switching a view is navigation, not a decision. Selection follows the
      ARIA attribute, so a segment cannot look chosen without announcing it. */
   .seg {
-    @apply grid gap-1 rounded-full bg-white/[0.05] p-1;
+    @apply grid gap-1 rounded-full border border-white/[0.08] p-1;
   }
   .seg-item {
     @apply press flex min-h-[44px] items-center justify-center gap-1.5 rounded-full px-2
@@ -110,9 +127,9 @@
 
   /* Choice chip (vibes, categories). Same selected treatment as a segment. */
   .chip {
-    @apply press inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-white/[0.08]
-           bg-white/[0.04] px-3.5 text-[13px] font-semibold text-fog-300 transition-colors duration-200
-           hover:bg-white/[0.08] hover:text-fog-100
+    @apply press inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-white/[0.10]
+           bg-transparent px-3.5 text-[13px] font-semibold text-fog-300 transition-colors duration-200
+           hover:border-white/[0.18] hover:text-fog-100
            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400;
   }
   .chip[aria-pressed='true'],
@@ -123,14 +140,16 @@
 
   /* Text input on a surface */
   .field {
-    @apply h-12 w-full rounded-oneui border border-white/[0.06] bg-ink-300 px-4 text-[15px] text-fog-100
+    @apply h-12 w-full rounded-oneui border border-white/[0.10] bg-transparent px-4 text-[15px] text-fog-100
            outline-none transition-colors placeholder:text-fog-500 focus:border-blue-400;
   }
 
-  /* A garment photo's plate. Wardrobe photos are flattened onto black with a
-     faint vignette; blending with `lighten` dissolves that box into the plate. */
-  .photo-well { background: rgb(var(--well)); }
-  .photo-well img { mix-blend-mode: lighten; }
+  /* A garment photo's home. Revamp: no plate. Wardrobe photos are shot on
+     black, so on the black canvas they need nothing, and `screen` dissolves
+     their black into whatever is behind them (a sheet, a hairline group)
+     while adding light rather than flattening shadows like `lighten` did. */
+  .photo-well { background: transparent; }
+  .photo-well img { mix-blend-mode: screen; }
 
   /* Bottom nav surface. Frosted by default (all Safari can do); on Chromium
      useLiquidGlass adds real edge refraction and sets data-glass, which thins

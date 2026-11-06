@@ -69,7 +69,7 @@ export default function ItemsPage() {
     <>
       <header className="flex items-end justify-between gap-4 px-5 pb-4 pt-12">
         <div className="min-w-0">
-          <h1 className="text-[30px] font-semibold leading-[1.15] tracking-tight text-fog-100">Gear</h1>
+          <h1 className="type-title">Gear</h1>
           <p className="mt-1.5 text-[15px] text-fog-300">
             {loading ? 'What you travel with.' : `${list.length} things Go can pack for you.`}
           </p>
@@ -80,7 +80,7 @@ export default function ItemsPage() {
       <div className="flex flex-col gap-6 px-4 pb-8">
         <a
           href={WARDROBE_URL}
-          className="press go-card flex min-h-[64px] items-center gap-3 px-4 py-3 transition-colors hover:bg-ink-300"
+          className="press go-card flex min-h-[64px] items-center gap-3 px-4 py-3 transition-colors hover:border-white/[0.16]"
         >
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-fog-200">
             <Shirt size={17} aria-hidden />
