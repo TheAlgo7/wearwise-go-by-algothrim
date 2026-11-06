@@ -71,7 +71,7 @@ flowchart LR
 ```
 
 - **Deterministic first.** `buildPackingList` is a plain function of the trip, the weather, the wardrobe and the gear. The same trip always gets the same list, and the list appears as soon as the engine has built it.
-- **Notes second.** `/api/notes` asks a model for at most three plain lines about the finished list, through a timed chain of Groq, Gemini and OpenRouter. If every provider fails, the list is still complete.
+- **Notes second.** `/api/notes` asks a model for at most three plain lines about the finished list, through a timed chain of Groq, Gemini and a free Gemma model on OpenRouter, all inside one 26 second deadline. If every provider fails, the list is still complete.
 - **Places resolve before the weather.** A city is geocoded first, with aliases for regions (Goa becomes Panaji), so "Manali" is the hill town, not a suburb of Chennai.
 - **Shared database, separate app.** Go reads the Wardrobe's `items` table and keeps its own `trips`, `packing_lists` and `travel_items`.
 
@@ -80,10 +80,10 @@ flowchart LR
 | Layer | Choice |
 |---|---|
 | App | Next.js 16 App Router, React 19, TypeScript |
-| Styling | Tailwind CSS on OKLCH tokens, shared with WearWise Wardrobe |
+| Styling | Tailwind CSS on OKLCH tokens, Archivo for display type and SamsungOne for everything else, shared with WearWise Wardrobe |
 | Data | Supabase Postgres, the same project as the Wardrobe |
 | Weather | OpenWeather current conditions and geocoding |
-| Notes | Groq, Google Gemini, OpenRouter |
+| Notes | Groq (Qwen 3.8), Google Gemini (flash-lite, 2.5 Flash), OpenRouter (Gemma 4) |
 | Hosting | Vercel, with a daily keep-alive cron for the free database |
 
 ## Run it locally

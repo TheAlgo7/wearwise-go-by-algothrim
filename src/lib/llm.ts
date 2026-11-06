@@ -12,6 +12,11 @@
  * rung returned 404 on every call) and OpenRouter dropped gpt-oss-20b:free.
  * Groq's chat models are now gpt-oss-120b, gpt-oss-20b and qwen3.8-27b, all at
  * 8,000 tokens a minute, which is plenty for three short notes.
+ *
+ * 2026-11-07: Nemotron 3 Super stopped being free (404 on every call since
+ * 6 Nov), so the last rung moved to Gemma 4 31B, the Wardrobe's last rung too.
+ * It is not a reasoning model, so three short lines fit in a small token
+ * budget; the free Nemotron 3.5 models spend ~900 tokens thinking first.
  */
 
 export interface LLMMessage {
@@ -27,7 +32,7 @@ const CHAIN: Rung[] = [
   { provider: 'groq', model: 'qwen/qwen3.8-27b' },
   { provider: 'gemini', model: 'gemini-flash-lite-latest' },
   { provider: 'gemini', model: 'gemini-2.5-flash' },
-  { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free' },
+  { provider: 'openrouter', model: 'google/gemma-4-31b-it:free' },
 ];
 
 const RUNG_TIMEOUT_MS = 12_000;
