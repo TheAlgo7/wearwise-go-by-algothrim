@@ -38,8 +38,11 @@ export async function POST(req: NextRequest) {
       await supabase.from('trips').update({ packing_reasoning: notes.join('\n') }).eq('id', trip.id);
     }
     return NextResponse.json({ notes });
-  } catch {
-    // Notes are a nice-to-have. The list is already there.
+  } catch (err) {
+    // Notes are a nice-to-have. The list is already there. But say so in the
+    // logs: a silent catch is how a retired model slug stays dead for weeks,
+    // and Vercel's error view only sees what reaches console.error.
+    console.error('[notes] every provider failed:', err instanceof Error ? err.message.slice(0, 600) : String(err));
     return NextResponse.json({ notes: [], unavailable: true });
   }
 }
