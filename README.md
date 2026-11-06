@@ -84,6 +84,7 @@ flowchart LR
 | Data | Supabase Postgres, the same project as the Wardrobe |
 | Weather | OpenWeather current conditions and geocoding |
 | Notes | Groq (Qwen 3.8), Google Gemini (flash-lite, 2.5 Flash), OpenRouter (Gemma 4) |
+| Tests | Vitest for the packing engine |
 | Hosting | Vercel, with a daily keep-alive cron for the free database |
 
 ## Run it locally
@@ -117,6 +118,7 @@ Leave `APP_PIN` empty and the lock is off. Then run `supabase/schema.sql` and `s
 | `npm run build` | Production build |
 | `npm run lint` | ESLint |
 | `npm run type-check` | TypeScript, no emit |
+| `npm test` | Vitest: documents by border, situations, one-of-each grooming, the 100 ml rule, colour variety |
 | `python scripts/readme-shots.py` | Rebuilds the screenshots in this README from the live app, using a demo trip it deletes afterwards |
 
 ## Project structure
