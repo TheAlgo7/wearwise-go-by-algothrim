@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="docs/readme/hero.png" alt="WearWise Go: pack like you already remembered everything" width="100%">
+  <picture>
+    <source media="(max-width: 600px)" srcset="docs/readme/hero-mobile.webp">
+    <img src="docs/readme/hero.webp" alt="WearWise Go: pack like you already remembered everything. Planning a trip, the Goa packing list and the clothes from the wardrobe on three phones" width="100%">
+  </picture>
 </p>
 
 <p align="center">
@@ -8,20 +11,14 @@
 </p>
 
 <p align="center">
-  <a href="#features">Features</a>
-  &nbsp;·&nbsp;
-  <a href="#how-it-works">How it works</a>
-  &nbsp;·&nbsp;
-  <a href="#run-it-locally">Run it locally</a>
-  &nbsp;·&nbsp;
-  <a href="https://github.com/TheAlgo7/wearwise-by-algothrim">WearWise Wardrobe</a>
+  <a href="https://github.com/TheAlgo7/wearwise-by-algothrim"><img alt="Wardrobe: WearWise" src="https://img.shields.io/badge/Wardrobe-WearWise-E2335D?style=for-the-badge"></a>
 </p>
 
 <p align="center">
-  <img alt="Next.js 16" src="https://img.shields.io/badge/Next.js-16-6B9FED?style=flat-square&labelColor=111111">
-  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-6B9FED?style=flat-square&labelColor=111111">
-  <img alt="Supabase" src="https://img.shields.io/badge/Supabase-Postgres-6B9FED?style=flat-square&labelColor=111111">
-  <img alt="Installable PWA" src="https://img.shields.io/badge/PWA-installable-6B9FED?style=flat-square&labelColor=111111">
+  <a href="#what-it-looks-like">What it looks like</a> ·
+  <a href="#features">Features</a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="#run-it-locally">Run it locally</a>
 </p>
 
 ## Why Go
@@ -32,30 +29,48 @@ Go is the travel half of [WearWise](https://github.com/TheAlgo7/wearwise-by-algo
 
 The list is built in code, the same way every time. A model only writes a few notes about it afterwards.
 
-## Screenshots
 
-<table>
-  <tr>
-    <td align="center"><img src="docs/readme/trips.png" width="160" alt="Trips"><br><sub>The next trip, counting down</sub></td>
-    <td align="center"><img src="docs/readme/new.png" width="160" alt="Planning a trip"><br><sub>Where, when and how</sub></td>
-    <td align="center"><img src="docs/readme/trip.png" width="160" alt="A trip"><br><sub>Weather, notes, what not to forget</sub></td>
-    <td align="center"><img src="docs/readme/list.png" width="160" alt="The clothing list"><br><sub>Real clothes from the wardrobe</sub></td>
-    <td align="center"><img src="docs/readme/gear.png" width="160" alt="Gear"><br><sub>Everything else Go can pack</sub></td>
-  </tr>
-</table>
+## What it looks like
+
+<picture>
+  <source media="(max-width: 600px)" srcset="docs/readme/plan-mobile.webp">
+  <img src="docs/readme/plan.webp" alt="Say where, Go writes it: planning a Goa trip, and the trip waiting to be packed" width="100%">
+</picture>
+
+**Say where, Go writes it.** Where, how many nights, the kind of place and how you travel; Go reads the forecast for every stop and writes the list.
+
+<picture>
+  <source media="(max-width: 600px)" srcset="docs/readme/forget-mobile.webp">
+  <img src="docs/readme/forget.webp" alt="Don't forget means it: the Goa list with its five must-haves, and the gear Go can pack for you" width="100%">
+</picture>
+
+**Don't forget means it.** About five things the trip genuinely fails without, then the rest by group, with your own gear and toiletries.
+
+<picture>
+  <source media="(max-width: 600px)" srcset="docs/readme/clothes-mobile.webp">
+  <img src="docs/readme/clothes.webp" alt="Your clothes, not categories: shirts, tees and shoes from the wardrobe on the list, beside the trip" width="100%">
+</picture>
+
+**Your clothes, not categories.** Clothing comes from the WearWise wardrobe by name, picked for the weather and the occasion.
 
 ## Features
 
 - **Your clothes, not categories.** Clothing comes from the WearWise wardrobe: the weather decides what is possible, formality decides what is right, and colour variety decides what makes the cut, so four nights is not four black tees.
 - **One product per kind.** If you own two sunscreens, the smaller bottle travels. A generic "Face wash" row drops out when a real face wash exists.
 - **Don't forget means it.** About five things a trip genuinely fails without, not twenty-two.
-- **Pack last.** Toothbrush, charger and whatever you use that morning get their own group.
 - **Right for the route.** A flight flags liquids over 100 ml and fits a cabin bag. A road trip knows the car. Passport, visa, adapter and insurance only appear when a stop is outside India.
 - **Multi-stop trips.** Each stop has its own nights, its own kind of place and its own weather.
+- **Offline.** An installable PWA that keeps working without signal once a list is loaded.
+
+<details>
+<summary><strong>Everything else it does</strong></summary>
+
+- **Pack last.** Toothbrush, charger and whatever you use that morning get their own group.
 - **Rebuild without losing anything.** A rebuild merges: ticks, notes and items you added by hand stay; engine rows that no longer apply go only if they are not packed.
 - **Pack it again.** Start a new trip from an old list, all unticked, or plan a past trip again with new dates.
-- **Offline.** An installable PWA that keeps working without signal once a list is loaded.
 - **Locked.** The same four-digit PIN as the Wardrobe, entered once per device.
+
+</details>
 
 ## How it works
 
@@ -75,6 +90,7 @@ flowchart LR
 - **Places resolve before the weather.** A city is geocoded first, with aliases for regions (Goa becomes Panaji), so "Manali" is the hill town, not a suburb of Chennai.
 - **Shared database, separate app.** Go reads the Wardrobe's `items` table and keeps its own `trips`, `packing_lists` and `travel_items`.
 
+
 ## Built with
 
 | Layer | Choice |
@@ -87,7 +103,11 @@ flowchart LR
 | Tests | Vitest for the packing engine |
 | Hosting | Vercel, with a daily keep-alive cron for the free database |
 
+
 ## Run it locally
+
+<details>
+<summary><strong>Setup, environment and commands</strong></summary>
 
 You need Node 20 or newer and a Supabase project.
 
@@ -121,7 +141,10 @@ Leave `APP_PIN` empty and the lock is off. Then run `supabase/schema.sql` and `s
 | `npm test` | Vitest: documents by border, situations, one-of-each grooming, the 100 ml rule, colour variety |
 | `python scripts/readme-shots.py` | Rebuilds the screenshots in this README from the live app, using a demo trip it deletes afterwards |
 
-## Project structure
+</details>
+
+<details>
+<summary><strong>Project structure</strong></summary>
 
 ```text
 src/
@@ -133,6 +156,10 @@ src/
 supabase/         schema and seed
 scripts/          README screenshots
 ```
+
+The pictures on this page come from `scripts/readme-shots.py` (captures in `docs/readme/src/assets`) and `docs/readme/src/readme.js`, drawn by The Algothrim's README Kit.
+
+</details>
 
 ## Licence
 
